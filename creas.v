@@ -1,10 +1,11 @@
 import gx
+import math
 
 struct Snake{
 	mut:
 		body		[]int
 		vert_radius	int	= 10
-		vert_angle	f64	= 1
+		vert_angle	f64	= math.pi
 }
 
 fn (crea Snake) fup(mut app App, pos Vector){
@@ -16,7 +17,10 @@ fn (crea Snake) fup(mut app App, pos Vector){
 			app.list_anchor[anchor_id].pos = new
 		}
 		else{
-			app.list_anchor[anchor_id].pos = pos
+			ref := (pos - app.list_anchor[anchor_id].pos)
+			if ref.len() > 10{
+				app.list_anchor[anchor_id].pos += mult(5, ref.normalize())
+			}
 		}
 	}
 
@@ -27,9 +31,44 @@ fn (crea Snake) fup(mut app App, pos Vector){
 				rel			:= app.list_anchor[anchor_id].pos
 				pos_rel1	:= app.list_anchor[anchor_id - 1].pos - rel
 				pos_rel2	:= app.list_anchor[anchor_id + 1].pos - rel
-				mut angle_calc	:= angle(pos_rel1, pos_rel2)
+				angle_calc	:= angle(pos_rel1, pos_rel2)
+
 				if angle_calc < crea.vert_angle{
-					app.list_anchor[anchor_id + 1].pos.turn(angle_calc - crea.vert_angle)
+					x := Vector{x:1}
+
+					angle1 := angle(x, pos_rel1)
+					angle2 := angle(x, pos_rel2)
+
+					rota := crea.vert_angle - angle_calc
+
+					if pos_rel1.y > 0{
+						if pos_rel2.y > 0{
+							if angle1 < angle2{
+								app.list_anchor[anchor_id + 1].pos.turn(rota)
+							}
+							else{
+								app.list_anchor[anchor_id + 1].pos.turn(-rota)
+							}
+						}
+						else{
+							app.list_anchor[anchor_id + 1].pos.turn(-rota)
+						}
+					}
+					else if pos_rel1.y < 0{
+						if pos_rel2.y < 0{
+							if angle1 < angle2{
+								app.list_anchor[anchor_id + 1].pos.turn(-rota)
+							}
+							else{
+								app.list_anchor[anchor_id + 1].pos.turn(rota)
+							}
+						}
+						else{
+							app.list_anchor[anchor_id + 1].pos.turn(rota)
+						}
+					}
+					
+
 					app.list_anchor[anchor_id].angle = crea.vert_angle
 				}
 				else{
