@@ -67,7 +67,7 @@ fn (vec Vector) turn(angle f64) Vector {
 }
 
 fn angle(vec1 Vector, vec2 Vector) f64 {
-	calcul	:= vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z/vec1.len() + vec2.len()
+	calcul	:= (vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z)/vec1.len() + vec2.len()
 	angle	:= math.acos(calcul)
 	return angle
 }

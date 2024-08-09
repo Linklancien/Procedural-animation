@@ -5,7 +5,7 @@ struct Snake{
 	mut:
 		body		[]int
 		vert_radius	int	= 10
-		vert_angle	f64	= math.pi
+		angle_contraint	f64	= math.pi/3
 }
 
 fn (crea Snake) fup(mut app App, pos Vector){
@@ -28,53 +28,24 @@ fn (crea Snake) fup(mut app App, pos Vector){
 	for anchor_id in crea.body{
 		if anchor_id != 0{
 			if anchor_id != crea.body.last(){
+				// Calcul de l'origine
 				rel			:= app.list_anchor[anchor_id].pos
+
+				// Expression des puis précédant et suivant par rapport a l'origine
 				pos_rel1	:= app.list_anchor[anchor_id - 1].pos - rel
 				pos_rel2	:= app.list_anchor[anchor_id + 1].pos - rel
-				angle_calc	:= angle(pos_rel1, pos_rel2)
 
-				if angle_calc < crea.vert_angle{
-					x := Vector{x:1}
+				// Calcul de l'angle entre les deux point
+				cur_angle	:= angle(pos_rel1, pos_rel2)
 
-					angle1 := angle(x, pos_rel1)
-					angle2 := angle(x, pos_rel2)
-
-					rota := crea.vert_angle - angle_calc
-
-					if pos_rel1.y > 0{
-						if pos_rel2.y > 0{
-							if angle1 < angle2{
-								app.list_anchor[anchor_id + 1].pos.turn(rota)
-							}
-							else{
-								app.list_anchor[anchor_id + 1].pos.turn(-rota)
-							}
-						}
-						else{
-							app.list_anchor[anchor_id + 1].pos.turn(-rota)
-						}
-					}
-					else if pos_rel1.y < 0{
-						if pos_rel2.y < 0{
-							if angle1 < angle2{
-								app.list_anchor[anchor_id + 1].pos.turn(-rota)
-							}
-							else{
-								app.list_anchor[anchor_id + 1].pos.turn(rota)
-							}
-						}
-						else{
-							app.list_anchor[anchor_id + 1].pos.turn(rota)
-						}
-					}
-					
-
-					app.list_anchor[anchor_id].angle = crea.vert_angle
-				}
-				else{
-					app.list_anchor[anchor_id].angle = angle_calc
-				}
+				app.list_anchor[anchor_id].angle = angle_contraint(cur_angle, app.list_anchor[anchor_id - 1].angle, crea.angle_contraint)
+				
+				app.list_anchor[anchor_id + 1].pos = rel + Vector{x : pos_rel2.len()}.turn(app.list_anchor[anchor_id].angle)
 			}
+		}
+		else {
+			rel := app.list_anchor[0].pos
+			app.list_anchor[0].angle = angle(pos - rel, app.list_anchor[1].pos - rel)
 		}
 	}
 }
