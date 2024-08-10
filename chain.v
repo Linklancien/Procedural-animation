@@ -1,3 +1,6 @@
+import gx
+import math
+
 struct Chain {
 	body_anchor_index			[]int
 	vert_radius		int	= 10
@@ -6,16 +9,16 @@ struct Chain {
 
 // Contraintes multiples
 fn (chain Chain) front_go_to(mut app App, cible Vector){
-	chain.front_to_back_update_pos(app, cible)
+	chain.front_to_back_update_pos(mut app, cible)
 
-	chain.back_to_front_update_angle(app)
+	chain.back_to_front_update_angle(mut app)
 }
 
-fn (chain Chain) fabrik(app, cible){
-	center := app.anchor[chain.body_anchor_index].pos
-	chain.front_to_back_update_pos(app, cible)
+fn (chain Chain) fabrik(mut app App, cible Vector){
+	center := app.list_anchor[chain.body_anchor_index[0]].pos
+	chain.front_to_back_update_pos(mut app, cible)
 	
-	chain.back_to_front_update_pos(app, center)
+	chain.back_to_front_update_pos(mut app, center)
 }
 
 
@@ -23,7 +26,7 @@ fn (chain Chain) fabrik(app, cible){
 fn (chain Chain) front_to_back_update_pos(mut app App, cible Vector){
 	// Pos
 	for index in 0..chain.body_anchor_index.len - 1{
-		anchor_id = chain.body_anchor_index[index]
+		anchor_id := chain.body_anchor_index[index]
 		
 		if index == 0{
 			// Déplacement du bout, ici le premier
@@ -46,7 +49,7 @@ fn (chain Chain) back_to_front_update_pos(mut app App, cible Vector){
 	for index_revers in 1..chain.body_anchor_index.len{
 		index := chain.body_anchor_index.len - index_revers
 
-		anchor_id = chain.body_anchor_index[index]
+		anchor_id := chain.body_anchor_index[index]
 
 		if index == 1{
 			// Déplacement du bout ici le dernier

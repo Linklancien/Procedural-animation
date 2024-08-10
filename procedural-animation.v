@@ -16,7 +16,7 @@ mut:
     win_width   int
 	win_height  int
 
-    list_crea   []Chain
+    list_crea   []Creature
     list_anchor []Anchor
 
     target      Vector
@@ -54,7 +54,7 @@ fn on_init(mut app App){
     for number in 0..len{
         app.list_anchor << Anchor{pos: mid + Vector{x: 5*number}}
     }
-    app.list_crea << Snake{body: []int{len: len, init: index}}
+    app.list_crea << Snake{spine: Chain{body_anchor_index: []int{len: len, init: index}}}
 }
 
 fn on_frame(mut app App) {
@@ -63,7 +63,7 @@ fn on_frame(mut app App) {
     app.ctx.begin() 
 
     for crea in app.list_crea{
-        crea.fup(mut app, app.target)
+        crea.update(mut app, app.target)
         crea.render(app)
     }
     app.ctx.end()
