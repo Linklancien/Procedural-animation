@@ -9,30 +9,36 @@ struct Chain {
 
 // Contraintes multiples
 fn (chain Chain) front_go_to(mut app App, cible Vector){
-	chain.front_to_back_update_pos(mut app, cible)
+	chain.front_to_back_update_pos(mut app, cible, false)
 
 	chain.front_to_back_update_angle(mut app)
 }
 
 fn (chain Chain) fabrik(mut app App, cible Vector){
-	center := app.list_anchor[chain.body_anchor_index[0]].pos
-	chain.front_to_back_update_pos(mut app, cible)
+	center := app.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
+
+	chain.front_to_back_update_pos(mut app, cible, true)
 	
-	chain.back_to_front_update_pos(mut app, center)
+	chain.back_to_front_update_pos(mut app, center, true)
 }
 
 
 // Contraintes de positions selon la position des autres maillons
-fn (chain Chain) front_to_back_update_pos(mut app App, cible Vector){
+fn (chain Chain) front_to_back_update_pos(mut app App, cible Vector, instant bool){
 	// Pos
 	for index in 0..chain.body_anchor_index.len{
 		anchor_id := chain.body_anchor_index[index]
 		
 		if index == 0{
 			// Déplacement du bout, ici le premier
-			ref := (cible - app.list_anchor[anchor_id].pos)
-			if ref.len() > 10{
-				app.list_anchor[anchor_id].pos += mult(5, ref.normalize())
+			if instant{
+				app.list_anchor[anchor_id].pos = cible
+			}
+			else{
+				ref := (cible - app.list_anchor[anchor_id].pos)
+				if ref.len() > 10{
+					app.list_anchor[anchor_id].pos += mult(5, ref.normalize())
+				}
 			}
 		}
 		else{
@@ -43,19 +49,24 @@ fn (chain Chain) front_to_back_update_pos(mut app App, cible Vector){
 		}
 	}
 }
-
-fn (chain Chain) back_to_front_update_pos(mut app App, cible Vector){
+ 
+fn (chain Chain) back_to_front_update_pos(mut app App, cible Vector, instant bool){
 	// Pos
-	for index_revers in 1..chain.body_anchor_index.len - 1{
+	for index_revers in 1..chain.body_anchor_index.len + 1{
 		index := chain.body_anchor_index.len - index_revers
 
 		anchor_id := chain.body_anchor_index[index]
 
-		if index == 1{
+		if index == chain.body_anchor_index.len - 1{
 			// Déplacement du bout ici le dernier
-			ref := (cible - app.list_anchor[anchor_id].pos)
-			if ref.len() > 10{
-				app.list_anchor[anchor_id].pos += mult(5, ref.normalize())
+			if instant{
+				app.list_anchor[anchor_id].pos = cible
+			}
+			else{
+				ref := (cible - app.list_anchor[anchor_id].pos)
+				if ref.len() > 10{
+					app.list_anchor[anchor_id].pos += mult(5, ref.normalize())
+				}
 			}
 		}
 		else{
@@ -66,6 +77,7 @@ fn (chain Chain) back_to_front_update_pos(mut app App, cible Vector){
 		}
 	}
 }
+
 
 // Contraintes de positions selon l'angles avec les autres maillons
 fn (chain Chain) front_to_back_update_angle(mut app App){
