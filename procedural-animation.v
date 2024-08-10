@@ -29,7 +29,7 @@ fn main() {
         height:app. win_height
         fullscreen: false
         create_window: true
-        window_title: '- Bestiaire -'
+        window_title: '- Animation Procedural -'
         user_data: app
         bg_color: bg_color
         frame_fn: on_frame
@@ -51,8 +51,8 @@ fn on_init(mut app App){
     mid := Vector{x: app.win_width/2, y: app.win_height/2}
 
     len := 40   
-    for _ in 0..len{
-        app.list_anchor << Anchor{pos: mid}
+    for number in 0..len{
+        app.list_anchor << Anchor{pos: mid + Vector{x: 5*number}}
     }
     app.list_crea << Snake{body: []int{len: len, init: index}}
 }
@@ -82,6 +82,9 @@ fn on_event(e &gg.Event, mut app App){
     match e.typ {
         .key_down {
             match e.key_code {
+                .f4{
+                    app.ctx.quit()
+                }
                 .escape {
                     
                 }

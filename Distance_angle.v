@@ -27,7 +27,7 @@ fn relative_angle_diff(angle f64, anchor f64) f64{
 	// the coordinate space such that PI is at the anchor. That way we don't have
 	// to worry about the "seam" between 0 and 2pi.
 
-	return math.pi - simplify_angle(angle + math.pi - anchor)
+	return math.pi - simplify_angle(angle  + math.pi- anchor)
 }
 
 // Simplify the angle to be in the range [0, 2pi)

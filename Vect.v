@@ -8,13 +8,13 @@ struct Vector {
 		y f64
 		z f64
 }
-const vector_null = Vector{0,0,0}
+const vector_null = Vector{}
 
 // FONCTIONS POUR LES VECTEURS
 fn (vec Vector) normalize() Vector {
 	len := vec.len()
 	if len == 0 {
-		return Vector{0, 0, 0}
+		return Vector{}
 	}
 	return Vector{
 		x: vec.x / len
@@ -63,12 +63,26 @@ fn divi_v(vec1 Vector, vec2 Vector) Vector {
 fn (vec Vector) turn(angle f64) Vector {
 	cos := math.cos(angle)
 	sin := math.sin(angle)
+	
 	return mult(vec.x, Vector{cos, sin, 0}) + mult(vec.y, Vector{-sin, cos, 0}) + Vector{0, 0, vec.z}
 }
 
 fn angle(vec1 Vector, vec2 Vector) f64 {
-	calcul	:= (vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z)/vec1.len() + vec2.len()
+	calcul	:= dot(vec1, vec2)/(vec1.len() * vec2.len())  
 	angle	:= math.acos(calcul)
+	return angle
+}
+
+fn (vec Vector) angle_trigo() f64 {
+	axe_x := Vector{x: 1}
+	
+	calcul	:= dot(vec, axe_x)/(vec.len() * axe_x.len())  
+	mut angle	:= math.acos(calcul)
+
+	if vec.y < 0 {
+		angle = math.pi*2 - angle
+	}
+
 	return angle
 }
 
