@@ -50,7 +50,7 @@ fn on_init(mut app App){
 
     mid := Vector{x: app.win_width/2, y: app.win_height/2}
 
-    len := 40   
+    len := 20  
     for number in 0..len{
         app.list_anchor << Anchor{pos: mid + Vector{x: 5*number}}
     }

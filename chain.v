@@ -11,7 +11,7 @@ struct Chain {
 fn (chain Chain) front_go_to(mut app App, cible Vector){
 	chain.front_to_back_update_pos(mut app, cible)
 
-	chain.back_to_front_update_angle(mut app)
+	chain.front_to_back_update_angle(mut app)
 }
 
 fn (chain Chain) fabrik(mut app App, cible Vector){
@@ -25,7 +25,7 @@ fn (chain Chain) fabrik(mut app App, cible Vector){
 // Contraintes de positions selon la position des autres maillons
 fn (chain Chain) front_to_back_update_pos(mut app App, cible Vector){
 	// Pos
-	for index in 0..chain.body_anchor_index.len - 1{
+	for index in 0..chain.body_anchor_index.len{
 		anchor_id := chain.body_anchor_index[index]
 		
 		if index == 0{
@@ -46,7 +46,7 @@ fn (chain Chain) front_to_back_update_pos(mut app App, cible Vector){
 
 fn (chain Chain) back_to_front_update_pos(mut app App, cible Vector){
 	// Pos
-	for index_revers in 1..chain.body_anchor_index.len{
+	for index_revers in 1..chain.body_anchor_index.len - 1{
 		index := chain.body_anchor_index.len - index_revers
 
 		anchor_id := chain.body_anchor_index[index]
@@ -72,7 +72,7 @@ fn (chain Chain) front_to_back_update_angle(mut app App){
 	// Angle
 	mut preced_angle := simplify_angle((app.list_anchor[chain.body_anchor_index[1]].pos - app.list_anchor[chain.body_anchor_index[0]].pos).angle_trigo())
 	
-	for index in 0..chain.body_anchor_index.len - 1{
+	for index in 1..chain.body_anchor_index.len - 1{
 		// Expression de la pos du suivant par rapport a l'actuel
 		position_relative	:= app.list_anchor[chain.body_anchor_index[index + 1]].pos - app.list_anchor[chain.body_anchor_index[index]].pos	// OA - OR = RO + OA = RO
 
@@ -89,7 +89,7 @@ fn (chain Chain) back_to_front_update_angle(mut app App){
 	// Angle
 	mut preced_angle := simplify_angle((app.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos - app.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos).angle_trigo())
 	
-	for index_revers in 2..chain.body_anchor_index.len{
+	for index_revers in 2..chain.body_anchor_index.len - 1{
 		index := chain.body_anchor_index.len - index_revers
 
 		// Expression de la pos du suivant par rapport a l'actuel
