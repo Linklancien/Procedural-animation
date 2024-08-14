@@ -48,13 +48,17 @@ fn on_init(mut app App){
     app.win_width 		= size.width
 	app.win_height 		= size.height
 
-    mid := Vector{x: app.win_width/2, y: app.win_height/2}
+    body_snake  := []int{len: 20, init: (5)}
+    app.list_crea << Snake{body: body_snake}
 
-    len := 20  
-    for number in 0..len{
-        app.list_anchor << Anchor{pos: mid + Vector{x: 5*number}}
+    mut body_arm    := []int{len: 12, init: 5}
+    body_arm[0]     = 10
+    body_arm[body_arm.len - 1]    = 10
+    app.list_crea << Arm{body: body_arm}
+
+    for mut crea in app.list_crea{
+        crea.initialisation(mut app)
     }
-    app.list_crea << Snake{spine: Chain{body_anchor_index: []int{len: len, init: index}}}
 }
 
 fn on_frame(mut app App) {

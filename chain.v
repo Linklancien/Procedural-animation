@@ -2,9 +2,9 @@ import gx
 import math
 
 struct Chain {
-	body_anchor_index			[]int
-	vert_radius		int	= 10
-	angle_minimum	f64	= math.pi/8
+	body_anchor_index	[]int
+	vert_radius			int	= 10
+	angle_minimum		f64	= math.pi/8
 }
 
 // Contraintes multiples
@@ -93,7 +93,7 @@ fn (chain Chain) front_to_back_update_angle(mut app App){
 
 		preced_angle = angle_contraint(angle_calcul, preced_angle, chain.angle_minimum)
 		
-		app.list_anchor[chain.body_anchor_index[index + 1]].pos = app.list_anchor[chain.body_anchor_index[index]].pos + position_relative.turn(preced_angle - angle_calcul)
+		app.list_anchor[chain.body_anchor_index[index + 1]].pos = app.list_anchor[chain.body_anchor_index[index]].pos + position_relative.turn((preced_angle - angle_calcul)*0.1)
 	}
 }
 
