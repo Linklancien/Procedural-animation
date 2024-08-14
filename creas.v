@@ -1,3 +1,5 @@
+import gx
+
 interface Creature {
 	update(mut app App, cible Vector)
 	render(app App)
@@ -74,25 +76,25 @@ fn (mut corp Corp) initialisation(mut app App){
 	mut left_arm    := []int{len: 6, init: 5}
     left_arm[0]     = 10
     left_arm[left_arm.len - 1]    = 10
-    corp.left_arm = Arm{pos: corp.pos + Vector{x: 10, y: -10}, body: left_arm}
+    corp.left_arm = Arm{pos: corp.pos + Vector{x: 10, y: -20}, body: left_arm}
 
 	// right_arm
 	mut right_arm    := []int{len: 6, init: 5}
     right_arm[0]     = 10
     right_arm[right_arm.len - 1]    = 10
-    corp.right_arm = Arm{pos: corp.pos + Vector{x: -10, y: -10}, body: right_arm}
+    corp.right_arm = Arm{pos: corp.pos + Vector{x: -10, y: -20}, body: right_arm}
 
 	// left_leg
 	mut left_leg    := []int{len: 4, init: 5}
     left_leg[0]     = 10
     left_leg[left_leg.len - 1]    = 10
-    corp.left_leg = Arm{pos: corp.pos + Vector{x: 10, y: 20}, body: left_leg}
+    corp.left_leg = Arm{pos: corp.pos + Vector{x: 10, y: 30}, body: left_leg}
 
 	// right_leg
 	mut right_leg    := []int{len: 4, init: 5}
     right_leg[0]     = 10
     right_leg[right_leg.len - 1]    = 10
-    corp.right_leg = Arm{pos: corp.pos + Vector{x: -10, y: 20}, body: right_leg}
+    corp.right_leg = Arm{pos: corp.pos + Vector{x: -10, y: 30}, body: right_leg}
 
 	// initialisation difs part
 	corp.left_arm.initialisation(mut app)
@@ -115,4 +117,13 @@ fn  (corp Corp) render(app App){
 
 	corp.left_leg.render(app)
 	corp.right_leg.render(app)
+
+	x :=	f32(corp.pos.x)
+	y :=	f32(corp.pos.y)
+	radius :=	10
+
+	c :=	gx.white
+
+	app.ctx.draw_circle_empty(x, y, radius, c)
+	app.ctx.draw_circle_empty(x, y + 20, radius, c)
 }
