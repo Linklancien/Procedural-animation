@@ -34,15 +34,16 @@ fn  (snake Snake) render(app App){
 // Arm
 struct Arm{
 	mut:
+		pos		Vector
 		body	[]int
 		spine	Chain
 }
 
 fn (mut arm Arm) initialisation(mut app App){
-	mid := Vector{x: app.win_width/2, y: app.win_height/2}
+	mid := arm.pos
 
-    for index, taille in arm.body{
-        app.list_anchor << Anchor{pos: mid + Vector{x: 5*index}, radius: taille}
+    for taille in arm.body{
+        app.list_anchor << Anchor{pos: mid, radius: taille}
 	}
 	len := arm.body.len
 
@@ -55,4 +56,63 @@ fn (arm Arm) update(mut app App, cible Vector){
 
 fn  (arm Arm) render(app App){
 	arm.spine.render(app)
+}
+
+// Corp
+struct Corp{
+	mut:
+		pos			Vector
+		left_arm	Arm
+		right_arm	Arm
+
+		left_leg	Arm
+		right_leg	Arm
+}
+
+fn (mut corp Corp) initialisation(mut app App){
+	// left_arm
+	mut left_arm    := []int{len: 6, init: 5}
+    left_arm[0]     = 10
+    left_arm[left_arm.len - 1]    = 10
+    corp.left_arm = Arm{pos: corp.pos + Vector{x: 10, y: -10}, body: left_arm}
+
+	// right_arm
+	mut right_arm    := []int{len: 6, init: 5}
+    right_arm[0]     = 10
+    right_arm[right_arm.len - 1]    = 10
+    corp.right_arm = Arm{pos: corp.pos + Vector{x: -10, y: -10}, body: right_arm}
+
+	// left_leg
+	mut left_leg    := []int{len: 4, init: 5}
+    left_leg[0]     = 10
+    left_leg[left_leg.len - 1]    = 10
+    corp.left_leg = Arm{pos: corp.pos + Vector{x: 10, y: 20}, body: left_leg}
+
+	// right_leg
+	mut right_leg    := []int{len: 4, init: 5}
+    right_leg[0]     = 10
+    right_leg[right_leg.len - 1]    = 10
+    corp.right_leg = Arm{pos: corp.pos + Vector{x: -10, y: 20}, body: right_leg}
+
+	// initialisation difs part
+	corp.left_arm.initialisation(mut app)
+	corp.right_arm.initialisation(mut app)
+	corp.left_leg.initialisation(mut app)
+	corp.right_leg.initialisation(mut app)
+}
+
+fn (corp Corp) update(mut app App, cible Vector){
+	corp.left_arm.update(mut app, cible)
+	corp.right_arm.update(mut app, cible)
+
+	corp.left_leg.update(mut app, cible)
+	corp.right_leg.update(mut app, cible)
+}
+
+fn  (corp Corp) render(app App){
+	corp.left_arm.render(app)
+	corp.right_arm.render(app)
+
+	corp.left_leg.render(app)
+	corp.right_leg.render(app)
 }
