@@ -96,7 +96,7 @@ fn on_event(e &gg.Event, mut app App){
                     
                 }
                 .backspace {
-
+                    
 				}
                 .right{
                     player := app.list_crea[app.list_player_id[0]]
@@ -111,7 +111,12 @@ fn on_event(e &gg.Event, mut app App){
                     }
                 }
                 .space{
-                   
+                   player := app.list_crea[app.list_player_id[0]]
+                    if player is Corp{
+                        if !player.is_gravity(app){
+                            app.list_anchor[player.body_anchor_index[0]].pos += Vector{y: -40}
+                        }
+                    }
                 }
                 else {}
             }
