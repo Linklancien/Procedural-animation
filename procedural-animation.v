@@ -18,9 +18,8 @@ mut:
 
     list_crea   []Creature
     list_anchor []Anchor
-
     list_box    []Box
-
+    list_player_id []int
     target      Vector
 
     gravity     Vector = Vector{y: 1}
@@ -53,6 +52,7 @@ fn on_init(mut app App){
 	app.win_height 		= size.height
 
     app.list_crea << Corp{pos: Vector{x: app.win_width/2 ,y: app.win_height/2}}
+    app.list_player_id << app.list_crea.len -1
 
     for mut crea in app.list_crea{
         crea.initialisation(mut app)
@@ -99,10 +99,16 @@ fn on_event(e &gg.Event, mut app App){
 
 				}
                 .right{
-                    
+                    player := app.list_crea[app.list_player_id[0]]
+                    if player is Corp{
+                        app.list_anchor[player.body_anchor_index[0]].pos += Vector{x: 10}
+                    }
                 }
                 .left{
-                    
+                    player := app.list_crea[app.list_player_id[0]]
+                    if player is Corp{
+                        app.list_anchor[player.body_anchor_index[0]].pos += Vector{x: -10}
+                    }
                 }
                 .space{
                    

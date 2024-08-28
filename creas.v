@@ -55,9 +55,7 @@ fn (mut arm Arm) initialisation(mut app App){
 }
 
 fn (mut arm Arm) update(mut app App, cible Vector){
-	arm.start_pos = app.list_anchor[arm.spine.body_anchor_index.last()].pos
 	arm.spine.fabrik(mut app, arm.start_pos, cible)
-	arm.end_pos = app.list_anchor[arm.spine.body_anchor_index[0]].pos
 }
 
 fn  (arm Arm) render(app App){

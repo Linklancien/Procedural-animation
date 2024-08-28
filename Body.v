@@ -48,48 +48,90 @@ fn (mut corp Corp) initialisation(mut app App){
 	last_anchor_id := app.list_anchor.len
 
 	corp.body_anchor_index = []int{len: last_anchor_id - fist_anchor_id, init: fist_anchor_id + index}
+
+	// Starts positions
+	corp.pos = app.list_anchor[corp.body_anchor_index[0]].pos
+	app.list_anchor[corp.body_anchor_index[1]].pos = corp.pos + Vector{y: 20}
+	corp.left_arm.start_pos		= corp.pos + Vector{x: -10, y: -20}
+	corp.right_arm.start_pos	= corp.pos + Vector{x: 10, y: -20}
+
+	corp.left_leg.start_pos		= corp.pos + Vector{x: 0, y: 30}
+	corp.right_leg.start_pos	= corp.pos + Vector{x: 0, y: 30}
+
+	corp.left_leg.end_pos		= corp.left_leg.start_pos	+ Vector{x: -40, y: 80}
+	corp.right_leg.end_pos		= corp.right_leg.start_pos	+ Vector{x: 40, y: 80}
 }
 
 fn (mut corp Corp) update(mut app App, cible Vector){
+	corp.ajustement(mut app)
+
 	corp.left_arm.update(mut app, cible)
 	corp.right_arm.update(mut app, cible)
 
-	corp.left_leg.update(mut app, Vector{y: app.win_height})
-	corp.right_leg.update(mut app, Vector{x: app.win_width ,y: app.win_height})
+	corp.left_leg.update(mut app, corp.left_leg.end_pos)
+	corp.right_leg.update(mut app, corp.right_leg.end_pos)
 
 	corp.gravity(mut app)
+	corp.collisions(mut app)
 }
 
 fn (mut corp Corp) gravity(mut app App){
-	
-	for id in corp.body_anchor_index{
-		app.list_anchor[id].pos += app.gravity
+	if corp.is_gravity(mut app){
+		corp.left_leg.end_pos	+= app.gravity
+		corp.right_leg.end_pos	+= app.gravity
+		for id in corp.body_anchor_index{
+			app.list_anchor[id].pos += app.gravity
+		}
 	}
+}
 
+fn (mut corp Corp) is_gravity(mut app App) bool{
+	for id in corp.body_anchor_index{
+		mut pos		:= app.list_anchor[id].pos
+		mut radius	:= app.list_anchor[id].radius
+		for box in app.list_box{
+			if box.is_collide_circle(pos, radius){
+				return false
+			}
+		}
+	}
+	return true
+}
+
+fn (mut corp Corp) collisions(mut app App){
 	for id in corp.body_anchor_index{
 		mut change := Vector{}
 		mut pos		:= app.list_anchor[id].pos
 		mut radius	:= app.list_anchor[id].radius
 		for box in app.list_box{
 			if box.is_collide_circle(pos, radius){
-				change += Vector{y: -10}
+				change += Vector{y: -1}
 			}
 		}
 		app.list_anchor[id].pos += change
+	}
+}
 
-		// change = Vector{}
-		// pos		= app.list_anchor[id].pos
-		// radius	= app.list_anchor[id].radius
+fn (mut corp Corp) ajustement(mut app App){
+	corp.pos = app.list_anchor[corp.body_anchor_index[0]].pos
+	app.list_anchor[corp.body_anchor_index[1]].pos = corp.pos + Vector{y: 20}
+	corp.left_arm.start_pos		= corp.pos + Vector{x: -10, y: -20}
+	corp.right_arm.start_pos	= corp.pos + Vector{x: 10, y: -20}
 
-		// for anchor_id in corp.body_anchor_index{
-		// 	if anchor_id != id{
-		// 		pos_other		:= app.list_anchor[anchor_id].pos
-		// 		radius_other	:= app.list_anchor[anchor_id].radius
-		// 		if circle_is_in_cirle(pos, radius, pos_other, radius_other){
-		// 			app.list_anchor[id].pos = pos_other + mult((radius + radius_other), (pos_other - pos).normalize())
-		// 		}
-		// 	}
-		// }
+	corp.left_leg.start_pos		= corp.pos + Vector{x: 0, y: 30}
+	corp.right_leg.start_pos	= corp.pos + Vector{x: 0, y: 30}
+
+	if corp.left_leg.end_pos.x < corp.pos.x -60{
+		corp.left_leg.end_pos	= corp.left_leg.start_pos	+ Vector{x: 40, y: 80}
+	}
+	else if corp.left_leg.end_pos.x > corp.pos.x +60{
+		corp.left_leg.end_pos	= corp.left_leg.start_pos	+ Vector{x: -40, y: 80}
+	}
+	if corp.right_leg.end_pos.x < corp.pos.x -60{
+		corp.right_leg.end_pos	= corp.right_leg.start_pos	+ Vector{x: 40, y: 80}
+	}
+	else if corp.right_leg.end_pos.x > corp.pos.x +60{
+		corp.right_leg.end_pos	= corp.right_leg.start_pos	+ Vector{x: -40, y: 80}
 	}
 }
 
