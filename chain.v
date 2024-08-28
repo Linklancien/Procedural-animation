@@ -14,9 +14,7 @@ fn (chain Chain) front_go_to(mut app App, cible Vector){
 	chain.front_to_back_update_angle(mut app)
 }
 
-fn (chain Chain) fabrik(mut app App, cible Vector){
-	center := app.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
-
+fn (chain Chain) fabrik(mut app App, center Vector, cible Vector){
 	chain.front_to_back_update_pos(mut app, cible, true)
 	
 	chain.back_to_front_update_pos(mut app, center, true)
