@@ -9,11 +9,8 @@ struct Box {
 fn (box Box) is_collide_circle(position Vector, radius f64) bool{
 	x := position.x + radius/2
 	y := position.y + radius/2
-
-	if(x >= box.pos.x + box.width)		// trop à droite
-    || (x + radius <= box.pos.x)			// trop à gauche
-    || (y >= box.pos.y + box.height)	// trop en bas
-    || (y + radius <= box.pos.y){		// trop en haut
+	// trop à droite || trop à gauche || trop en bas || trop en haut
+	if (x >= box.pos.x + box.width) || (x + radius <= box.pos.x) || (y >= box.pos.y + box.height) || (y + radius <= box.pos.y){		
 		return false
 	}
 	else{
