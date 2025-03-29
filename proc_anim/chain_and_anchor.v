@@ -114,12 +114,10 @@ pub fn (chain Chain) front_to_back_update_angle(mut user User){
 		dif := angle - prec_angle
 		if math.abs(dif) < chain.angle_minimum  {
 			if dif > 0{
-				println("posi")
-				user.list_anchor[chain.body_anchor_index[index - 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle + chain.angle_minimum)
+				user.list_anchor[chain.body_anchor_index[index + 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle + chain.angle_minimum)
 			}
 			else if dif < 0{
-				println("nega")
-				user.list_anchor[chain.body_anchor_index[index - 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle - chain.angle_minimum)
+				user.list_anchor[chain.body_anchor_index[index + 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle - chain.angle_minimum)
 			}
 		}
 	}
