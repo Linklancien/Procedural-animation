@@ -14,7 +14,7 @@ pub struct Anchor {
 pub struct Chain {
 	body_anchor_index	[]int
 	vert_radius			int	= 10
-	angle_minimum		f32	= math.pi/3
+	angle_minimum		f32	= math.pi*2/3
 }
 
 pub interface User{
@@ -111,12 +111,16 @@ pub fn (chain Chain) front_to_back_update_angle(mut user User){
 		pos := user.list_anchor[chain.body_anchor_index[index]].pos
 		prec_angle := pos.angle_towards(user.list_anchor[chain.body_anchor_index[index - 1]].pos)
 		angle := pos.angle_towards(user.list_anchor[chain.body_anchor_index[index + 1]].pos)
-
-		if angle - prec_angle < chain.angle_minimum {
-			user.list_anchor[chain.body_anchor_index[index - 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), chain.angle_minimum + prec_angle)
-		}
-		else if angle - prec_angle > math.pi*2 - chain.angle_minimum{
-			user.list_anchor[chain.body_anchor_index[index - 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), -chain.angle_minimum + prec_angle)
+		dif := angle - prec_angle
+		if math.abs(dif) < chain.angle_minimum  {
+			if dif > 0{
+				println("posi")
+				user.list_anchor[chain.body_anchor_index[index - 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle + chain.angle_minimum)
+			}
+			else if dif < 0{
+				println("nega")
+				user.list_anchor[chain.body_anchor_index[index - 1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle - chain.angle_minimum)
+			}
 		}
 	}
 }
