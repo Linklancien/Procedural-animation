@@ -105,17 +105,17 @@ pub fn (chain Chain) back_to_front_update_pos(mut user User, cible vec.Vec2[f32]
 
 
 // Contraintes de positions selon l'angles avec les autres maillons
-pub fn (chain Chain) front_to_back_update_angle(mut user User, cible vec.Vec2){
-	pos := user.list_anchor[chain.body_anchor_index[0]].pos
-	prec_angle := pos.angle_towards(cible)
-	angle := pos.angle_towards(user.list_anchor[chain.body_anchor_index[1]].pos)
-	dif := angle - prec_angle
-	if math.abs(dif) < chain.angle_minimum  {
-		if dif > 0{
-			user.list_anchor[chain.body_anchor_index[1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle + chain.angle_minimum)
+pub fn (chain Chain) front_to_back_update_angle(mut user User, cible vec.Vec2[f32]){
+	pos_init := user.list_anchor[chain.body_anchor_index[0]].pos
+	prec_angle_init := pos_init.angle_towards(cible)
+	angle_init := pos_init.angle_towards(user.list_anchor[chain.body_anchor_index[1]].pos)
+	dif_init := angle_init - prec_angle_init
+	if math.abs(dif_init) < chain.angle_minimum  {
+		if dif_init > 0{
+			user.list_anchor[chain.body_anchor_index[1]].pos = pos_init + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle_init + chain.angle_minimum)
 		}
-		else if dif < 0{
-			user.list_anchor[chain.body_anchor_index[1]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle - chain.angle_minimum)
+		else if dif_init < 0{
+			user.list_anchor[chain.body_anchor_index[1]].pos = pos_init + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle_init - chain.angle_minimum)
 		}
 	}
 	
@@ -137,20 +137,20 @@ pub fn (chain Chain) front_to_back_update_angle(mut user User, cible vec.Vec2){
 
 
 
-pub fn (chain Chain) back_to_front_update_angle(mut user User , cible vec.Vec2){
-	pos := user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
-	prec_angle := pos.angle_towards(cible)
-	angle := pos.angle_towards(user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos)
-	dif := angle - prec_angle
-	if math.abs(dif) < chain.angle_minimum  {
-		if dif > 0{
-			user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle + chain.angle_minimum)
+pub fn (chain Chain) back_to_front_update_angle(mut user User , cible vec.Vec2[f32]){
+	pos_init := user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
+	prec_angle_init := pos_init.angle_towards(cible)
+	angle_init := pos_init.angle_towards(user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos)
+	dif_init := angle_init - prec_angle_init
+	if math.abs(dif_init) < chain.angle_minimum  {
+		if dif_init > 0{
+			user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos = pos_init + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle_init + chain.angle_minimum)
 		}
-		else if dif < 0{
-			user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos = pos + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle - chain.angle_minimum)
+		else if dif_init < 0{
+			user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos = pos_init + vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle_init - chain.angle_minimum)
 		}
 	}
-	
+
 	for index_revers in 2..chain.body_anchor_index.len - 1{
 		index := chain.body_anchor_index.len - index_revers
 
