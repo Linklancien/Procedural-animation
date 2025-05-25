@@ -1,4 +1,4 @@
-module proc_anim
+ module proc_anim
 
 import gx
 import gg
@@ -113,7 +113,7 @@ pub fn (chain Chain) front_to_back_update_angle(mut user User, cible vec.Vec2[f3
 	}
 }
 
-pub fn (chain Chain) back_to_front_update_angle(mut user User , cible vec.Vec2){
+pub fn (chain Chain) back_to_front_update_angle(mut user User , cible vec.Vec2[f32]){
 	pos := user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
 	prec_angle := pos.angle_towards(cible)
 	angle := pos.angle_towards(user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos)
