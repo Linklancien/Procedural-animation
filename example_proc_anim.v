@@ -54,10 +54,10 @@ fn on_init(mut app App){
     body_snake  := []int{len: 20, init: (5)}
     app.list_crea << proc_anim.Snake{body: body_snake}
 
-    // mut body_arm    := []int{len: 12, init: 5}
-    // body_arm[0]     = 10
-    // body_arm[body_arm.len - 1]    = 10
-    // app.list_crea << proc_anim.Arm{pos: vec.Vec2[f32]{x: app.win_width*2/3 ,y: app.win_height/2} ,body: body_arm}
+    mut body_arm    := []int{len: 12, init: 5}
+    body_arm[0]     = 10
+    body_arm[body_arm.len - 1]    = 10
+    app.list_crea << proc_anim.Arm{pos: vec.Vec2[f32]{x: app.win_width*2/3 ,y: app.win_height/2} ,body: body_arm}
 
     // app.list_crea << proc_anim.Corp{pos: vec.Vec2[f32]{x: app.win_width/3 ,y: app.win_height/2}}
 
