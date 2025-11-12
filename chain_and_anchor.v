@@ -1,4 +1,4 @@
- module proc_anim
+module proc_anim
 
 import gx
 import gg
@@ -26,8 +26,8 @@ pub interface User{
     win_width   int
 	win_height  int
 
-    list_crea   []proc_anim.Creature
-    list_anchor []proc_anim.Anchor
+    list_crea   []Creature
+    list_anchor []Anchor
 
     target      vec.Vec2[f32]
 }

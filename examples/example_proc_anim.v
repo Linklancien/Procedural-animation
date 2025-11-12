@@ -1,7 +1,7 @@
 import gg
 import gx
 import os
-import proc_anim
+import linklancien.proc_anim
 
 import math.vec
 
