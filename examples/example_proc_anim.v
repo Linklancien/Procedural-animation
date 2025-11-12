@@ -1,5 +1,4 @@
 import gg
-import gx
 import os
 import linklancien.proc_anim
 
@@ -12,7 +11,7 @@ const font_path     = os.resource_abs_path('0xProtoNerdFontMono-Regular.ttf')
 struct App {
 mut:
     ctx    &gg.Context = unsafe { nil }
-    text_cfg	gx.TextCfg
+    text_cfg	gg.TextCfg
 
     x_mouse     int
     y_mouse     int
@@ -146,13 +145,13 @@ fn (app App) text_rect_render(x int, y int, corner bool, text_brut string, trans
         new_x -= max_len/2
     }
 
-    app.ctx.draw_rounded_rect_filled(new_x, y, max_len, app.text_cfg.size*text_split.len + 10, 5, attenuation(gx.gray, transparence))
+    app.ctx.draw_rounded_rect_filled(new_x, y, max_len, app.text_cfg.size*text_split.len + 10, 5, attenuation(gg.gray, transparence))
     for id, text in text_split{
         new_y   := y + app.text_cfg.size * id
         app.ctx.draw_text(new_x + 5, new_y + 5, text, app.text_cfg)
     }
 }
 
-fn attenuation (color gx.Color, new_a u8) gx.Color{
-	return gx.Color{color.r, color.g, color.b, new_a}
+fn attenuation (color gg.Color, new_a u8) gg.Color{
+	return gg.Color{color.r, color.g, color.b, new_a}
 }

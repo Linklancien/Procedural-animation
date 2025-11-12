@@ -1,6 +1,6 @@
 module proc_anim
 
-import gx
+import gg
 import math.vec
 
 pub interface Creature {
@@ -125,7 +125,7 @@ fn  (corp Corp) render(user User){
 	y :=	f32(corp.pos.y)
 	radius :=	10
 
-	c :=	gx.white
+	c :=	gg.white
 
 	user.ctx.draw_circle_empty(x, y, radius, c)
 	user.ctx.draw_circle_empty(x, y + 20, radius, c)

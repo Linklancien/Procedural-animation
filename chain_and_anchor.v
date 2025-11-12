@@ -1,6 +1,5 @@
 module proc_anim
 
-import gx
 import gg
 import math
 import math.vec
@@ -155,7 +154,7 @@ pub fn (chain Chain) render(user User){
 		y :=	f32(user.list_anchor[anchor_id].pos.y)
 		radius :=	f32(user.list_anchor[anchor_id].radius)
 
-		c :=	gx.white
+		c :=	gg.white
 
 		user.ctx.draw_circle_empty(x, y, radius, c)
 	}
