@@ -6,6 +6,8 @@ import math.vec
 import linklancien.proc_anim
 
 // Snake
+pub struct Test{}
+
 pub struct Snake {
 pub mut:
 	body  []int

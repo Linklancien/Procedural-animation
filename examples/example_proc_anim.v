@@ -1,7 +1,7 @@
 import gg
 import os
 import linklancien.proc_anim
-import linklancien.proc_anim.pre_build  {Snake}
+import linklancien.proc_anim.pre_build  {Test}
 import math.vec
 
 const bg_color = gg.Color{}
