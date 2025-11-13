@@ -5,43 +5,6 @@ import math
 import math.vec
 import linklancien.proc_anim
 
-// Snake
-pub struct Snake {
-pub mut:
-	body  []int
-	spine proc_anim.Chain
-}
-
-fn (mut snake Snake) initialisation(mut user proc_anim.User) {
-	mid := vec.Vec2[f32]{
-		x: user.win_width / 2
-		y: user.win_height / 2
-	}
-
-	for index, taille in snake.body {
-		user.list_anchor << proc_anim.Anchor{
-			pos:    mid + vec.Vec2[f32]{
-				x: 5 * index
-			}
-			radius: taille
-		}
-	}
-	len := snake.body.len
-
-	snake.spine = proc_anim.Chain{
-		body_anchor_index: []int{len: len, init: user.list_anchor.len - len + index}
-		angle_minimum:     math.pi * 5 / 6
-	}
-}
-
-fn (snake Snake) update(mut user proc_anim.User, cible vec.Vec2[f32]) {
-	snake.spine.front_go_to(mut user, cible)
-}
-
-fn (snake Snake) render(user proc_anim.User) {
-	snake.spine.render(user)
-}
-
 // Arm
 pub struct Arm {
 pub mut:

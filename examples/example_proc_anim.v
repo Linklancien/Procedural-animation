@@ -1,7 +1,7 @@
 import gg
 import os
 import linklancien.proc_anim
-import linklancien.proc_anim.pre_build  {Snake}
+import math
 import math.vec
 
 const bg_color = gg.Color{}
@@ -50,20 +50,20 @@ fn on_init(mut app App) {
 	app.win_height = size.height
 
 	body_snake := []int{len: 20, init: (5)}
-	app.list_crea << pre_build.Snake{
+	app.list_crea << Snake{
 		body: body_snake
 	}
 
-	mut body_arm := []int{len: 12, init: 5}
-	body_arm[0] = 10
-	body_arm[body_arm.len - 1] = 10
-	app.list_crea << pre_build.Arm{
-		pos:  vec.Vec2[f32]{
-			x: app.win_width * 2 / 3
-			y: app.win_height / 2
-		}
-		body: body_arm
-	}
+	// mut body_arm := []int{len: 12, init: 5}
+	// body_arm[0] = 10
+	// body_arm[body_arm.len - 1] = 10
+	// app.list_crea << pre_build.Arm{
+	// 	pos:  vec.Vec2[f32]{
+	// 		x: app.win_width * 2 / 3
+	// 		y: app.win_height / 2
+	// 	}
+	// 	body: body_arm
+	// }
 
 	// app.list_crea << pre_build.Corp{pos: vec.Vec2[f32]{x: app.win_width/3 ,y: app.win_height/2}}
 
@@ -152,4 +152,44 @@ fn (app App) text_rect_render(x int, y int, corner bool, text_brut string, trans
 
 fn attenuation(color gg.Color, new_a u8) gg.Color {
 	return gg.Color{color.r, color.g, color.b, new_a}
+}
+
+
+// Creas
+
+// Snake
+pub struct Snake {
+pub mut:
+	body  []int
+	spine proc_anim.Chain
+}
+
+fn (mut snake Snake) initialisation(mut user proc_anim.User) {
+	mid := vec.Vec2[f32]{
+		x: user.win_width / 2
+		y: user.win_height / 2
+	}
+
+	for index, taille in snake.body {
+		user.list_anchor << proc_anim.Anchor{
+			pos:    mid + vec.Vec2[f32]{
+				x: 5 * index
+			}
+			radius: taille
+		}
+	}
+	len := snake.body.len
+
+	snake.spine = proc_anim.Chain{
+		body_anchor_index: []int{len: len, init: user.list_anchor.len - len + index}
+		angle_minimum:     math.pi * 5 / 6
+	}
+}
+
+fn (snake Snake) update(mut user proc_anim.User, cible vec.Vec2[f32]) {
+	snake.spine.front_go_to(mut user, cible)
+}
+
+fn (snake Snake) render(user proc_anim.User) {
+	snake.spine.render(user)
 }
