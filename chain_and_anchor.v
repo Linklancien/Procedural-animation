@@ -5,14 +5,24 @@ import math.vec
 
 const origin = vec.vec2(f32(0.0), f32(0.0))
 
-// TODO: do the basic functions like apply_angle_with_constraint but for arrays
-// TODO: for arrays : back to front and front to back
 // pos_constraints.len = points.len - 1
 // min/max_constraints.len = points.len - 2
-pub fn front_to_back(mut points []vec.Vec2[f32], pos_constraints []f32, min_constraints []f32, max_constraints []f32) {
-	for ip in 0 .. points.len - 1 {
+pub fn front_to_back_min_max(mut points []vec.Vec2[f32], pos_constraints []f32, min_constraints []f32, max_constraints []f32) {
+	for ip in 0 .. points.len - 2 {
 		points[ip] = apply_pos_constraint(points[ip], points[ip + 1], pos_constraints[ip])
+		points[ip] = apply_min_max_angle_constraints(points[ip], points[ip + 1], points[ip + 2], min_constraints[ip], max_constraints[ip])
 	}
+	points[ip] = apply_pos_constraint(points[points.len - 2], points[points.len - 1], pos_constraints[points.len - 2])
+}
+
+// pos_constraints.len = points.len - 1
+// angle_constraints.len = points.len - 2
+pub fn front_to_back_min_max(mut points []vec.Vec2[f32], pos_constraints []f32, angle_constraints []f32) {
+	for ip in 0 .. points.len - 2 {
+		points[ip] = apply_pos_constraint(points[ip], points[ip + 1], pos_constraints[ip])
+		points[ip] = apply_angle_constraints([points[ip], points[ip + 1], points[ip + 2], angle_constraints[ip])
+	}
+	points[ip] = apply_pos_constraint(points[points.len - 2], points[points.len - 1], pos_constraints[points.len - 2])
 }
 
 // returns the position of b constrained to (b - a).magnitude = constraint
@@ -38,7 +48,7 @@ pub fn apply_angle_constraint(a vec.Vec2[f32], b vec.Vec2[f32], c vec.Vec2[f32],
 // returns the furthest position for the new `c` point but blocks the angle `min_constraint` < <`a` `b` `c`> < `max_constraint`  (radians)
 // returns the new position for c that does not break the angle constraint
 // used for asymetric angle constraint
-pub fn apply_angle_constraint(a vec.Vec2[f32], b vec.Vec2[f32], c vec.Vec2[f32], _min_constraint f32, _max_constraint f32) vec.Vec2[f32] {
+pub fn apply_min_max_angle_constraint(a vec.Vec2[f32], b vec.Vec2[f32], c vec.Vec2[f32], _min_constraint f32, _max_constraint f32) vec.Vec2[f32] {
 	min_constraint := valid_angle(_min_constraint)
 	max_constraint := valid_angle(_max_constraint)
 	ab := b - a
