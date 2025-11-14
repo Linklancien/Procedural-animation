@@ -61,7 +61,12 @@ fn on_init(mut app App) {
 		body: body_arm
 	}
 
-	app.list_crea << Corp{pos: vec.Vec2[f32]{x: app.win_width/3 ,y: app.win_height/2}}
+	app.list_crea << Corp{
+		pos: vec.Vec2[f32]{
+			x: app.win_width / 3
+			y: app.win_height / 2
+		}
+	}
 
 	for mut crea in app.list_crea {
 		crea.initialisation(mut app)
@@ -149,7 +154,6 @@ fn (app App) text_rect_render(x int, y int, corner bool, text_brut string, trans
 fn attenuation(color gg.Color, new_a u8) gg.Color {
 	return gg.Color{color.r, color.g, color.b, new_a}
 }
-
 
 // Creas
 

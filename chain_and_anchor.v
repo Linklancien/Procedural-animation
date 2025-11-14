@@ -10,9 +10,11 @@ const origin = vec.vec2(f32(0.0), f32(0.0))
 pub fn front_to_back_min_max(mut points []vec.Vec2[f32], pos_constraints []f32, min_constraints []f32, max_constraints []f32) {
 	for ip in 0 .. points.len - 2 {
 		points[ip] = apply_pos_constraint(points[ip], points[ip + 1], pos_constraints[ip])
-		points[ip] = apply_min_max_angle_constraints(points[ip], points[ip + 1], points[ip + 2], min_constraints[ip], max_constraints[ip])
+		points[ip] = apply_min_max_angle_constraints(points[ip], points[ip + 1], points[ip + 2],
+			min_constraints[ip], max_constraints[ip])
 	}
-	points[ip] = apply_pos_constraint(points[points.len - 2], points[points.len - 1], pos_constraints[points.len - 2])
+	points[ip] = apply_pos_constraint(points[points.len - 2], points[points.len - 1],
+		pos_constraints[points.len - 2])
 }
 
 // pos_constraints.len = points.len - 1
@@ -20,9 +22,11 @@ pub fn front_to_back_min_max(mut points []vec.Vec2[f32], pos_constraints []f32, 
 pub fn front_to_back_min_max(mut points []vec.Vec2[f32], pos_constraints []f32, angle_constraints []f32) {
 	for ip in 0 .. points.len - 2 {
 		points[ip] = apply_pos_constraint(points[ip], points[ip + 1], pos_constraints[ip])
-		points[ip] = apply_angle_constraints([points[ip], points[ip + 1], points[ip + 2], angle_constraints[ip])
+		points[ip] = apply_angle_constraints(points[ip], points[ip + 1], points[ip + 2],
+			angle_constraints[ip])
 	}
-	points[ip] = apply_pos_constraint(points[points.len - 2], points[points.len - 1], pos_constraints[points.len - 2])
+	points[ip] = apply_pos_constraint(points[points.len - 2], points[points.len - 1],
+		pos_constraints[points.len - 2])
 }
 
 // returns the position of b constrained to (b - a).magnitude = constraint
