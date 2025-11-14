@@ -1,176 +1,97 @@
 module proc_anim
 
-import gg
 import math
 import math.vec
 
-pub struct Anchor {
-pub mut:
-	pos    vec.Vec2[f32]
-	radius f32 = 10
+const origin = vec.vec2(f64(0.0), f64(0.0))
+
+// pos_constraints.len = points.len - 1 (0th is for the link between 0th and 1st point)
+// min/max_constraints.len = points.len - 2 (0th is for the 1st point)
+pub fn front_to_back_min_max(mut points []vec.Vec2[f64], pos_constraints []f64, min_constraints []f64, max_constraints []f64) {
+	for ip in 0 .. points.len - 2 {
+		points[ip] = apply_pos_constraint(points[ip + 1], points[ip], pos_constraints[ip])
+		points[ip] = apply_min_max_angle_constraint(points[ip + 2], points[ip + 1], points[ip],
+			min_constraints[ip], max_constraints[ip])
+	}
+	points[points.len - 2] = apply_pos_constraint(points[points.len - 1], points[points.len - 2],
+		pos_constraints[points.len - 2])
 }
 
-pub struct Chain {
-pub:
-	body_anchor_index []int
-	vert_radius       int = 10
-	angle_minimum     f32 = math.pi * 2 / 3
+// pos_constraints.len = points.len - 1 (0th is for the link between 0th and 1st point)
+// min/max_constraints.len = points.len - 2 (0th is for the 1st point)
+pub fn back_to_front_min_max(mut points []vec.Vec2[f64], pos_constraints []f64, min_constraints []f64, max_constraints []f64) {
+	p := points.len - 1
+	for ip in 0 .. points.len - 2 {
+		points[p - ip] = apply_pos_constraint(points[p - (ip + 1)], points[p - ip], pos_constraints[p - ip - 1])
+		points[p - ip] = apply_min_max_angle_constraint(points[p - (ip + 2)], points[p - (ip + 1)],
+			points[p - ip], min_constraints[p - ip - 2], max_constraints[p - ip - 2])
+	}
+	points[1] = apply_pos_constraint(points[0], points[1], pos_constraints[0])
 }
 
-pub interface User {
-mut:
-	ctx &gg.Context
-
-	x_mouse    int
-	y_mouse    int
-	win_width  int
-	win_height int
-
-	list_crea   []Creature
-	list_anchor []Anchor
-
-	target vec.Vec2[f32]
+// pos_constraints.len = points.len - 1 (0th is for the link between 0th and 1st point)
+// angle_constraints.len = points.len - 2 (0th is for the 1st point)
+pub fn front_to_back(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64) {
+	for ip in 0 .. points.len - 2 {
+		points[ip] = apply_pos_constraint(points[ip + 1], points[ip], pos_constraints[ip])
+		points[ip] = apply_angle_constraint(points[ip + 2], points[ip + 1], points[ip],
+			angle_constraints[ip])
+	}
+	points[points.len - 2] = apply_pos_constraint(points[points.len - 1], points[points.len - 2],
+		pos_constraints[points.len - 2])
 }
 
-pub interface Creature {
-	update(mut user User, cible vec.Vec2[f32])
-	render(user User)
-mut:
-	initialisation(mut user User)
+// pos_constraints.len = points.len - 1 (0th is for the link between 0th and 1st point)
+// angle_constraints.len = points.len - 2 (0th is for the 1st point)
+pub fn back_to_front(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64) {
+	p := points.len - 1
+	for ip in 0 .. points.len - 2 {
+		points[p - ip] = apply_pos_constraint(points[p - (ip + 1)], points[p - ip], pos_constraints[p - ip - 1])
+		points[p - ip] = apply_angle_constraint(points[p - (ip + 2)], points[p - (ip + 1)],
+			points[p - ip], angle_constraints[p - ip - 2])
+	}
+	points[1] = apply_pos_constraint(points[0], points[1], pos_constraints[0])
 }
 
-// Contraintes multiples
-pub fn (chain Chain) front_go_to(mut user User, cible vec.Vec2[f32]) {
-	chain.front_to_back_update_pos(mut user, cible, false)
-
-	chain.front_to_back_update_angle(mut user, cible)
+// returns the position of b constrained to (b - a).magnitude = constraint
+pub fn apply_pos_constraint(a vec.Vec2[f64], b vec.Vec2[f64], constraint f64) vec.Vec2[f64] {
+	return a + b.unit().mul_scalar(constraint)
 }
 
-pub fn (chain Chain) fabrik(mut user User, cible vec.Vec2[f32]) {
-	center := user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
-
-	chain.front_to_back_update_pos(mut user, cible, true)
-
-	chain.back_to_front_update_pos(mut user, center, true)
-}
-
-// Contraintes de positions selon la position des autres maillons
-pub fn (chain Chain) front_to_back_update_pos(mut user User, cible vec.Vec2[f32], instant bool) {
-	// Pos
-	for index in 0 .. chain.body_anchor_index.len {
-		anchor_id := chain.body_anchor_index[index]
-
-		if index == 0 {
-			// Déplacement du bout, ici le premier
-			if instant {
-				user.list_anchor[anchor_id].pos = cible
-			} else {
-				ref := (cible - user.list_anchor[anchor_id].pos)
-				if ref.magnitude() > 10 {
-					user.list_anchor[anchor_id].pos += ref.normalize().mul_scalar[f32](5)
-				}
-			}
-		} else {
-			// Contraintes des maillons de la chaine au maillon précédent
-			rel := user.list_anchor[chain.body_anchor_index[index - 1]].pos
-			mut new :=
-				(user.list_anchor[anchor_id].pos - rel).normalize().mul_scalar[f32](chain.vert_radius) +
-				rel
-			user.list_anchor[anchor_id].pos = new
-		}
+// returns the furthest position for the new `c` point (but blocks the angle <`a` `b` `c`> at `constraint` (radians)
+// returns the new position for that does not break the angle constraint
+pub fn apply_angle_constraint(a vec.Vec2[f64], b vec.Vec2[f64], c vec.Vec2[f64], constraint f64) vec.Vec2[f64] {
+	ab := b - a
+	bc := c - b
+	wanted_angle := valid_angle(ab.angle_between(bc))
+	abs_constraint := math.abs(valid_angle(constraint))
+	if math.abs(wanted_angle) > abs_constraint {
+		current_angle_sign := math.sign(wanted_angle)
+		return ab.unit().mul_scalar(bc.magnitude).rotate_around_ccw(origin, abs_constraint * current_angle_sign)
+	} else {
+		return c
 	}
 }
 
-pub fn (chain Chain) back_to_front_update_pos(mut user User, cible vec.Vec2[f32], instant bool) {
-	// Pos
-	for index_revers in 1 .. chain.body_anchor_index.len + 1 {
-		index := chain.body_anchor_index.len - index_revers
-
-		anchor_id := chain.body_anchor_index[index]
-
-		if index == chain.body_anchor_index.len - 1 {
-			// Déplacement du bout ici le dernier
-			if instant {
-				user.list_anchor[anchor_id].pos = cible
-			} else {
-				ref := (cible - user.list_anchor[anchor_id].pos)
-				if ref.magnitude() > 10 {
-					user.list_anchor[anchor_id].pos += ref.normalize().mul_scalar[f32](5)
-				}
-			}
-		} else {
-			// Contraintes des maillons de la chaine au maillon précédent
-			rel := user.list_anchor[chain.body_anchor_index[index + 1]].pos
-			mut new :=
-				(user.list_anchor[anchor_id].pos - rel).normalize().mul_scalar[f32](chain.vert_radius) +
-				rel
-			user.list_anchor[anchor_id].pos = new
-		}
+// returns the furthest position for the new `c` point but blocks the angle `min_constraint` < <`a` `b` `c`> < `max_constraint`  (radians)
+// returns the new position for c that does not break the angle constraint
+// used for asymetric angle constraint
+pub fn apply_min_max_angle_constraint(a vec.Vec2[f64], b vec.Vec2[f64], c vec.Vec2[f64], _min_constraint f64, _max_constraint f64) vec.Vec2[f64] {
+	min_constraint := valid_angle(_min_constraint)
+	max_constraint := valid_angle(_max_constraint)
+	ab := b - a
+	bc := c - b
+	wanted_angle := valid_angle(ab.angle_between(bc))
+	if wanted_angle > max_constraint {
+		return ab.unit().mul_scalar(bc.magnitude).rotate_around_ccw(origin, max_constraint)
+	} else if wanted_angle < min_constraint {
+		return ab.unit().mul_scalar(bc.magnitude).rotate_around_ccw(origin, min_constraint)
+	} else {
+		return c
 	}
 }
 
-// Contraintes de positions selon l'angles avec les autres maillons
-pub fn (chain Chain) front_to_back_update_angle(mut user User, cible vec.Vec2[f32]) {
-	constraint_angle(user.list_anchor[chain.body_anchor_index[0]].pos, cible, mut user.list_anchor[chain.body_anchor_index[1]].pos,
-		chain.vert_radius, chain.angle_minimum)
-
-	for index in 1 .. chain.body_anchor_index.len - 1 {
-		constraint_angle(user.list_anchor[chain.body_anchor_index[index]].pos, user.list_anchor[chain.body_anchor_index[index - 1]].pos, mut
-			user.list_anchor[chain.body_anchor_index[index + 1]].pos, chain.vert_radius,
-			chain.angle_minimum)
-	}
-}
-
-pub fn (chain Chain) back_to_front_update_angle(mut user User, cible vec.Vec2[f32]) {
-	pos := user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 1]].pos
-	prec_angle := pos.angle_towards(cible)
-	angle := pos.angle_towards(user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos)
-	dif := angle - prec_angle
-	if math.abs(dif) < chain.angle_minimum {
-		if dif > 0 {
-			user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos = pos +
-				vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle +
-				chain.angle_minimum)
-		} else if dif < 0 {
-			user.list_anchor[chain.body_anchor_index[chain.body_anchor_index.len - 2]].pos = pos +
-				vec.vec2(f32(chain.vert_radius), f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prec_angle - chain.angle_minimum)
-		}
-	}
-
-	for index_revers in 2 .. chain.body_anchor_index.len - 1 {
-		index := chain.body_anchor_index.len - index_revers
-		constraint_angle(user.list_anchor[chain.body_anchor_index[index]].pos, user.list_anchor[chain.body_anchor_index[
-			index + 1]].pos, mut user.list_anchor[chain.body_anchor_index[index - 1]].pos,
-			chain.vert_radius, chain.angle_minimum)
-	}
-}
-
-pub fn constraint_angle(pos vec.Vec2[f32], prev vec.Vec2[f32], mut next vec.Vec2[f32], radius f32, minimum f32) {
-	prev_angle := pos.angle_towards(prev)
-	angle := pos.angle_towards(next)
-	dif := angle - prev_angle
-	if math.abs(dif) < minimum {
-		if dif > 0 {
-			next = pos +
-				vec.vec2(radius, f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prev_angle +
-				minimum)
-		} else if dif < 0 {
-			next = pos +
-				vec.vec2(radius, f32(0.0)).rotate_around_ccw(vec.vec2(f32(0.0), f32(0.0)), prev_angle - minimum)
-		}
-	}
-}
-
-// Rendering
-pub fn (chain Chain) render(user User) {
-	// Pos
-	for anchor_id in chain.body_anchor_index {
-		x := f32(user.list_anchor[anchor_id].pos.x)
-		y := f32(user.list_anchor[anchor_id].pos.y)
-		radius := f32(user.list_anchor[anchor_id].radius)
-
-		c := gg.white
-
-		user.ctx.draw_circle_empty(x, y, radius, c)
-	}
+// returns the rad angle between -pi and pi
+pub fn valid_angle(angle f64) f64 {
+	return math.mod(angle, 2 * math.pi) - math.pi
 }

@@ -5,7 +5,6 @@ import math
 import math.vec
 
 const bg_color = gg.Color{}
-const font_path = os.resource_abs_path('0xProtoNerdFontMono-Regular.ttf')
 
 struct App {
 mut:
@@ -28,19 +27,16 @@ fn main() {
 	app.ctx = gg.new_context(
 		width:         app.win_width
 		height:        app.win_height
-		fullscreen:    false
 		create_window: true
-		window_title:  '- Animation Procedural -'
+		window_title:  '- Procedural Animation -'
 		user_data:     app
 		bg_color:      bg_color
 		frame_fn:      on_frame
 		init_fn:       on_init
 		event_fn:      on_event
 		sample_count:  2
-		font_path:     font_path
 	)
 
-	// lancement du programme/de la fenêtre
 	app.ctx.run()
 }
 
@@ -153,7 +149,6 @@ fn (app App) text_rect_render(x int, y int, corner bool, text_brut string, trans
 fn attenuation(color gg.Color, new_a u8) gg.Color {
 	return gg.Color{color.r, color.g, color.b, new_a}
 }
-
 
 // Creas
 
