@@ -16,7 +16,7 @@ mut:
 	win_width  int
 	win_height int
 
-	target vec.Vec2[f32]
+	target vec.Vec2[f64]
 
 	snake Snake
 }
@@ -48,7 +48,7 @@ fn on_init(mut app App) {
 	app.snake = Snake{
 		pos_constraints:   []f64{len: snake_len, init: 10}
 		angle_constraints: []f64{len: snake_len, init: math.pi * 5 / 6}
-		points:            []vec.Vec2[f64]{len: snake_len}
+		points:            []vec.Vec2[f64]{len: snake_len, init: vec.Vec2[f64]{x: index + app.win_width/2, y: index  + app.win_height/2}}
 	}
 }
 
@@ -66,7 +66,7 @@ fn on_event(e &gg.Event, mut app App) {
 	app.win_height = size.height
 
 	app.x_mouse, app.y_mouse = int(e.mouse_x), int(e.mouse_y)
-	app.target = vec.Vec2[f32]{
+	app.target = vec.Vec2[f64]{
 		x: app.x_mouse
 		y: app.y_mouse
 	}
@@ -105,8 +105,8 @@ mut:
 	points []vec.Vec2[f64]
 }
 
-fn (mut snake Snake) update(target vec.Vec2[f32]) {
-	proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
+fn (mut snake Snake) update(target vec.Vec2[f64]) {
+	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints, target, 1)
 }
 
 fn (snake Snake) render(ctx gg.Context) {
