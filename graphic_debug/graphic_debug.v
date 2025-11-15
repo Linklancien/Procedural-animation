@@ -19,6 +19,7 @@ pub fn angular_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, colo
 		} else {
 			0
 		}
-		ctx.draw_polygon_filled(f32(point.x), f32(point.y), f32(radius[i]), edges, f32(rotation), color)
+		ctx.draw_polygon_filled(f32(point.x), f32(point.y), f32(radius[i]), edges, f32(rotation),
+			color)
 	}
 }
