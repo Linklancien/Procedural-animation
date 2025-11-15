@@ -46,9 +46,12 @@ fn on_init(mut app App) {
 
 	snake_len := 20
 	app.snake = Snake{
-		pos_constraints:   []f64{len: snake_len, init: 10}
-		angle_constraints: []f64{len: snake_len, init: math.pi * 5 / 6}
-		points:            []vec.Vec2[f64]{len: snake_len, init: vec.Vec2[f64]{x: index + app.win_width/2, y: index  + app.win_height/2}}
+		pos_constraints:   []f64{len: snake_len, init: 20}
+		angle_constraints: []f64{len: snake_len, init: math.pi * 2 / 6}
+		points:            []vec.Vec2[f64]{len: snake_len, init: vec.Vec2[f64]{
+			x: index + app.win_width / 2
+			y: index + app.win_height / 2
+		}}
 	}
 }
 
@@ -106,7 +109,8 @@ mut:
 }
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
-	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints, target, 1)
+	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+		target, 1)
 }
 
 fn (snake Snake) render(ctx gg.Context) {
