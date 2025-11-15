@@ -1,0 +1,114 @@
+import gg
+import linklancien.proc_anim
+import graphic_debug
+import math
+import math.vec
+
+const bg_color = gg.Color{}
+
+struct App {
+mut:
+	ctx      &gg.Context = unsafe { nil }
+	text_cfg gg.TextCfg
+
+	x_mouse    int
+	y_mouse    int
+	win_width  int
+	win_height int
+
+	target vec.Vec2[f32]
+
+	snake Snake
+}
+
+fn main() {
+	mut app := &App{}
+	app.ctx = gg.new_context(
+		width:         app.win_width
+		height:        app.win_height
+		create_window: true
+		window_title:  '- Procedural Animation -'
+		user_data:     app
+		bg_color:      bg_color
+		frame_fn:      on_frame
+		init_fn:       on_init
+		event_fn:      on_event
+		sample_count:  2
+	)
+
+	app.ctx.run()
+}
+
+fn on_init(mut app App) {
+	size := app.ctx.window_size()
+	app.win_width = size.width
+	app.win_height = size.height
+
+	snake_len := 20
+	app.snake = Snake{
+		pos_constraints:   []f64{len: snake_len, init: 10}
+		angle_constraints: []f64{len: snake_len, init: math.pi * 5 / 6}
+		points:            []vec.Vec2[f64]{len: snake_len}
+	}
+}
+
+fn on_frame(mut app App) {
+	app.snake.update(app.target)
+	// Draw
+	app.ctx.begin()
+	app.snake.render(app.ctx)
+	app.ctx.end()
+}
+
+fn on_event(e &gg.Event, mut app App) {
+	size := app.ctx.window_size()
+	app.win_width = size.width
+	app.win_height = size.height
+
+	app.x_mouse, app.y_mouse = int(e.mouse_x), int(e.mouse_y)
+	app.target = vec.Vec2[f32]{
+		x: app.x_mouse
+		y: app.y_mouse
+	}
+	if e.char_code != 0 && e.char_code < 128 {
+		// app.change += u8(e.char_code).ascii_str()
+	}
+	match e.typ {
+		.key_down {
+			match e.key_code {
+				.f4 {
+					app.ctx.quit()
+				}
+				.escape {}
+				.backspace {}
+				.right {}
+				.left {}
+				.space {}
+				else {}
+			}
+		}
+		.mouse_down {
+			match e.mouse_button {
+				.left {}
+				else {}
+			}
+		}
+		else {}
+	}
+}
+
+// Snake
+struct Snake {
+	pos_constraints   []f64
+	angle_constraints []f64
+mut:
+	points []vec.Vec2[f64]
+}
+
+fn (mut snake Snake) update(target vec.Vec2[f32]) {
+	proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
+}
+
+fn (snake Snake) render(ctx gg.Context) {
+	graphic_debug.basic_render(ctx, snake.points, snake.pos_constraints, gg.white)
+}

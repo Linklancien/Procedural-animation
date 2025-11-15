@@ -5,6 +5,8 @@ import math.vec
 
 const origin = vec.vec2(f64(0.0), f64(0.0))
 
+// Brute fn:
+
 // pos_constraints.len = points.len - 1 (0th is for the link between 0th and 1st point)
 // min/max_constraints.len = points.len - 2 (0th is for the 1st point)
 pub fn front_to_back_min_max(mut points []vec.Vec2[f64], pos_constraints []f64, min_constraints []f64, max_constraints []f64) {
@@ -94,4 +96,9 @@ pub fn apply_min_max_angle_constraint(a vec.Vec2[f64], b vec.Vec2[f64], c vec.Ve
 // returns the rad angle between -pi and pi
 pub fn valid_angle(angle f64) f64 {
 	return math.mod(angle, 2 * math.pi) - math.pi
+}
+
+// Some algos:
+pub fn front_go_to(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64, target vec.Vec2[f64]){
+
 }
