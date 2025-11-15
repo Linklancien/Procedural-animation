@@ -65,10 +65,10 @@ pub fn apply_angle_constraint(a vec.Vec2[f64], b vec.Vec2[f64], c vec.Vec2[f64],
 	bc := c - b
 	wanted_angle := valid_angle(ab.angle_between(bc))
 	abs_constraint := math.abs(valid_angle(constraint))
-	if math.abs(wanted_angle) > abs_constraint + 0.000001 {
+	if math.abs(wanted_angle) > abs_constraint + 0.0001 {
 		current_angle_sign := math.sign(wanted_angle)
-		return a +
-			ab.unit().mul_scalar(bc.magnitude).rotate_around_ccw(origin, abs_constraint * current_angle_sign)
+		return b +
+			ab.unit().mul_scalar(bc.magnitude()).rotate_around_ccw(origin, abs_constraint * current_angle_sign)
 	} else {
 		return c
 	}
@@ -83,10 +83,10 @@ pub fn apply_min_max_angle_constraint(a vec.Vec2[f64], b vec.Vec2[f64], c vec.Ve
 	ab := b - a
 	bc := c - b
 	wanted_angle := valid_angle(ab.angle_between(bc))
-	if wanted_angle > max_constraint + 0.000001 {
-		return a + ab.unit().mul_scalar(bc.magnitude).rotate_around_ccw(origin, max_constraint)
-	} else if wanted_angle < min_constraint {
-		return a + ab.unit().mul_scalar(bc.magnitude).rotate_around_ccw(origin, min_constraint)
+	if wanted_angle > max_constraint + 0.0001 {
+		return b + ab.unit().mul_scalar(bc.magnitude()).rotate_around_ccw(origin, max_constraint)
+	} else if wanted_angle < min_constraint + 0.0001 {
+		return b + ab.unit().mul_scalar(bc.magnitude()).rotate_around_ccw(origin, min_constraint)
 	} else {
 		return c
 	}
