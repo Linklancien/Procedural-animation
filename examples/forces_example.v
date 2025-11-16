@@ -110,9 +110,9 @@ fn (mut snake Snake) apply_force(forces ...vec.Vec2[f64]) {
 		total += force
 	}
 
-	a := total.div_scalar(snake.node_weight)
 	dt := 1.0
-	dpos := a.mul_scalar(dt*dt/2)
+	acceleration := total.div_scalar(snake.node_weight)
+	dpos := acceleration.mul_scalar(dt*dt/2)
 	// panic('$a,  $dt, ${dt*dt/2}, $dpos')
 	for i in 0..snake.points.len{
 		if 0 < snake.points[i].x && snake.points[i].x < 800 && 0 < snake.points[i].y && snake.points[i].y < 600{
