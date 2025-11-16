@@ -55,6 +55,7 @@ fn on_init(mut app App) {
 			x: index + app.win_width / 2
 			y: index + app.win_height / 2
 		}}
+		velocity:          []vec.Vec2[f64]{len: snake_len}
 	}
 }
 
@@ -82,7 +83,7 @@ fn on_event(e &gg.Event, mut app App) {
 				.f4 {
 					app.ctx.quit()
 				}
-				else{}
+				else {}
 			}
 		}
 		else {}
@@ -91,11 +92,13 @@ fn on_event(e &gg.Event, mut app App) {
 
 // Snake
 struct Snake {
-	node_weight		  f64 = 1
+	node_weight       f64 = 100
 	pos_constraints   []f64
 	angle_constraints []f64
 mut:
-	points []vec.Vec2[f64]
+	// those fields have the same len
+	points   []vec.Vec2[f64]
+	velocity []vec.Vec2[f64]
 }
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
@@ -105,19 +108,23 @@ fn (mut snake Snake) update(target vec.Vec2[f64]) {
 }
 
 fn (mut snake Snake) apply_force(forces ...vec.Vec2[f64]) {
+	// sum forces
 	mut total := vec.Vec2[f64]{}
-	for force in forces{
+	for force in forces {
 		total += force
 	}
-
-	dt := 1.0
+	// m*a = sum forces
 	acceleration := total.div_scalar(snake.node_weight)
-	dpos := acceleration.mul_scalar(dt*dt/2)
-	// panic('$a,  $dt, ${dt*dt/2}, $dpos')
-	for i in 0..snake.points.len{
-		if 0 < snake.points[i].x && snake.points[i].x < 800 && 0 < snake.points[i].y && snake.points[i].y < 600{
-			print(dpos)
-			snake.points[i] += dpos
+
+	// dpos = a*dt²/2
+	dt := 1.0
+	dpos := acceleration.mul_scalar(dt * dt / 2)
+	for i in 0 .. snake.points.len {
+		if 0 < snake.points[i].x && snake.points[i].x < 800 && 0 < snake.points[i].y
+			&& snake.points[i].y < 600 {
+			// pos = dpos + V0*dt			
+			snake.points[i] += dpos + snake.velocity[i].mul_scalar(dt)
+			snake.velocity[i] = acceleration.mul_scalar(dt)
 		}
 	}
 }
