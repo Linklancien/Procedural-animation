@@ -102,12 +102,23 @@ mut:
 }
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
-	snake.apply_force(gravity.mul_scalar(snake.node_weight))
+	dt := 1.0
+	real_target := ((target - snake.points[0]).normalize() + snake.points[0])
+	// println('Target: $target, $real_target')
+	snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
+	prec_points := snake.points.clone()
 	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-		target, 1)
+		real_target, 1)
+	for i, prec_point in prec_points{
+		// snake.velocity[i] += (prec_point - snake.points[i]).div_scalar(dt)
+		// println('POint $i')
+		// print(prec_point)
+		// print(snake.points[i])
+		// print((prec_point - snake.points[i]).div_scalar(dt))
+	}
 }
 
-fn (mut snake Snake) apply_force(forces ...vec.Vec2[f64]) {
+fn (mut snake Snake) apply_force(dt f64, forces ...vec.Vec2[f64]) {
 	// sum forces
 	mut total := vec.Vec2[f64]{}
 	for force in forces {
@@ -117,7 +128,6 @@ fn (mut snake Snake) apply_force(forces ...vec.Vec2[f64]) {
 	acceleration := total.div_scalar(snake.node_weight)
 
 	// dpos = a*dt²/2
-	dt := 1.0
 	dpos := acceleration.mul_scalar(dt * dt / 2)
 	for i in 0 .. snake.points.len {
 		if 0 < snake.points[i].x && snake.points[i].x < 800 && 0 < snake.points[i].y
@@ -125,6 +135,9 @@ fn (mut snake Snake) apply_force(forces ...vec.Vec2[f64]) {
 			// pos = dpos + V0*dt			
 			snake.points[i] += dpos + snake.velocity[i].mul_scalar(dt)
 			snake.velocity[i] = acceleration.mul_scalar(dt)
+		}
+		else{
+			snake.velocity[i] = vec.Vec2[f64]{}
 		}
 	}
 }
