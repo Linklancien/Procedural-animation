@@ -138,7 +138,13 @@ fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	// apply external forces
 	snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
 	//
-	real_target := (target - snake.points[0]).normalize() + snake.points[0]
+	dif := (target - snake.points[0])
+	fact := 5.0
+	real_target := if dif.magnitude() >= fact {
+		dif.normalize().mul_scalar(fact) + snake.points[0]
+	} else {
+		snake.points[0]
+	}
 	// apply the constrains + the change of position of the head
 	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
 		real_target, 1)
