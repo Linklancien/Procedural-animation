@@ -68,15 +68,15 @@ fn on_init(mut app App) {
 }
 
 fn on_frame(mut app App) {
-	match app.run_method{
-		.run{
+	match app.run_method {
+		.run {
 			app.snake.update(app.target)
 		}
-		.step{
+		.step {
 			app.snake.update(app.target)
 			app.run_method = .pause
 		}
-		else{}
+		else {}
 	}
 	// Draw
 	app.ctx.begin()
@@ -100,17 +100,17 @@ fn on_event(e &gg.Event, mut app App) {
 				.f4 {
 					app.ctx.quit()
 				}
-				.space{
-					match app.run_method{
-						.pause{
+				.space {
+					match app.run_method {
+						.pause {
 							app.run_method = .step
 						}
-						else{
+						else {
 							app.run_method = .pause
 						}
 					}
 				}
-				.enter{
+				.enter {
 					app.run_method = .run
 				}
 				else {}
@@ -133,12 +133,16 @@ mut:
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	dt := 1.0
-
+	// stock the previous position to calcul the velocity later
 	prec_pos := snake.points.clone()
+	// apply external forces
 	snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
+	//
+	real_target := (target - snake.points[0]).normalize() + snake.points[0]
+	// apply the constrains + the change of position of the head
 	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-		target, 1)
-	for i in 0..snake.velocity.len{
+		real_target, 1)
+	for i in 0 .. snake.velocity.len {
 		snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
 	}
 }
@@ -155,20 +159,9 @@ fn (mut snake Snake) apply_force(dt f64, forces ...vec.Vec2[f64]) {
 	// dpos = a*dt²/2
 	for i in 0 .. snake.points.len {
 		if 0 < snake.points[i].x && snake.points[i].x < 800 && 0 < snake.points[i].y
-			&& snake.points[i].y < 600 {
-			snake.points[i] += acceleration.mul_scalar(dt * dt / 2) + snake.velocity[i].mul_scalar(dt)
-			// if i != 0{
-			// 	droite := (snake.points[i - 1] - snake.points[i]).normalize()
-			// 	a := acceleration.perpendicular(droite)
-			// 	println('E')
-			// 	println(acceleration)
-			// 	println(droite)
-			// 	println(acceleration.project(droite))
-			// 	println(a)
-			// 	pos = dpos + V0*dt			
-			// 	snake.velocity[i] += a.mul_scalar(dt)
-			// 	println(snake.velocity[i])
-			// }
+			&& snake.points[i].y < 400 {
+			snake.points[i] += acceleration.mul_scalar(dt * dt / 2) +
+				snake.velocity[i].mul_scalar(dt)
 		}
 	}
 }
