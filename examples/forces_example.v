@@ -9,6 +9,12 @@ const gravity = vec.Vec2[f64]{
 	y: 10
 }
 
+enum Run_method {
+	pause
+	step
+	run
+}
+
 struct App {
 mut:
 	ctx      &gg.Context = unsafe { nil }
@@ -22,6 +28,8 @@ mut:
 	target vec.Vec2[f64]
 
 	snake Snake
+
+	run_method Run_method = .pause
 }
 
 fn main() {
@@ -60,7 +68,16 @@ fn on_init(mut app App) {
 }
 
 fn on_frame(mut app App) {
-	app.snake.update(app.target)
+	match app.run_method{
+		.run{
+			app.snake.update(app.target)
+		}
+		.step{
+			app.snake.update(app.target)
+			app.run_method = .pause
+		}
+		else{}
+	}
 	// Draw
 	app.ctx.begin()
 	app.snake.render(app.ctx)
@@ -82,6 +99,19 @@ fn on_event(e &gg.Event, mut app App) {
 			match e.key_code {
 				.f4 {
 					app.ctx.quit()
+				}
+				.space{
+					match app.run_method{
+						.pause{
+							app.run_method = .step
+						}
+						else{
+							app.run_method = .pause
+						}
+					}
+				}
+				.enter{
+					app.run_method = .run
 				}
 				else {}
 			}
