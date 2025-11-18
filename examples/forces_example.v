@@ -107,7 +107,7 @@ fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
 		target, 1)
 	for i in 0..snake.velocity.len{
-		snake.velocity[i] += snake.points[i] - prec_pos[i]
+		snake.velocity[i] = snake.points[i] - prec_pos[i]
 	}
 }
 
