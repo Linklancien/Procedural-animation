@@ -34,6 +34,7 @@ mut:
 	snake Snake
 
 	run_method Run_method = .pause
+	render_velocity bool
 }
 
 fn main() {
@@ -85,7 +86,7 @@ fn on_frame(mut app App) {
 	// Draw
 	app.ctx.begin()
 	app.ctx.draw_rect_filled(0.0, 0.0, corner.x, corner.y, gg.gray)
-	app.snake.render(app.ctx)
+	app.snake.render(app.render_velocity, app.ctx)
 	app.ctx.end()
 }
 
@@ -117,6 +118,9 @@ fn on_event(e &gg.Event, mut app App) {
 				}
 				.enter {
 					app.run_method = .run
+				}
+				.v{
+					app.render_velocity = !app.render_velocity
 				}
 				else {}
 			}
@@ -174,8 +178,7 @@ fn (mut snake Snake) apply_force(dt f64, forces ...vec.Vec2[f64]) {
 	}
 }
 
-fn (snake Snake) render(ctx gg.Context) {
-	render_velocity := true
+fn (snake Snake) render(render_velocity bool, ctx gg.Context) {
 	if render_velocity {
 		graphic_debug.basic_render(ctx, snake.points, snake.pos_constraints, gg.white)
 		for i, v in snake.velocity {
