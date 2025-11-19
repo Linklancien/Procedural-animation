@@ -122,7 +122,7 @@ fn on_event(e &gg.Event, mut app App) {
 
 // Snake
 struct Snake {
-	node_weight       f64 = 100
+	node_weight       f64 = 10
 	pos_constraints   []f64
 	angle_constraints []f64
 mut:
@@ -132,24 +132,48 @@ mut:
 }
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
-	dt := 1.0
-	// stock the previous position to calcul the velocity later
-	prec_pos := snake.points.clone()
-	// apply external forces
-	snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
-	//
-	dif := (target - snake.points[0])
-	fact := 5.0
-	real_target := if dif.magnitude() >= fact {
-		dif.normalize().mul_scalar(fact) + snake.points[0]
-	} else {
-		snake.points[0]
+	instant := true
+	if instant{
+		// start by getting the head at the mouse
+		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+			target, 1)
+		dt := 1.0
+		// stock the previous position to calcul the velocity later
+		prec_pos := snake.points.clone()
+		// apply external forces
+		snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
+		// apply constrains
+		// proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
+		println('PT')
+		println(snake.points[0])
+		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+			snake.points[0], 1)
+		println(snake.points[0])
+		// apply the constrains + the change of position of the head
+		for i in 0 .. snake.velocity.len {
+			snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
+		}
 	}
-	// apply the constrains + the change of position of the head
-	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-		real_target, 1)
-	for i in 0 .. snake.velocity.len {
-		snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
+	else{
+		dt := 1.0
+		// stock the previous position to calcul the velocity later
+		prec_pos := snake.points.clone()
+		// apply external forces
+		snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
+		//
+		dif := (target - snake.points[0])
+		fact := 5.0
+		real_target := if dif.magnitude() >= fact {
+			dif.normalize().mul_scalar(fact) + snake.points[0]
+		} else {
+			snake.points[0]
+		}
+		// apply the constrains + the change of position of the head
+		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+			real_target, 1)
+		for i in 0 .. snake.velocity.len {
+			snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
+		}
 	}
 }
 
