@@ -33,8 +33,8 @@ mut:
 
 	snake Snake
 
-	run_method Run_method = .pause
-	render_velocity bool
+	run_method      Run_method = .pause
+	render_velocity bool       = true
 }
 
 fn main() {
@@ -61,12 +61,13 @@ fn on_init(mut app App) {
 	app.win_height = size.height
 
 	snake_len := 20
+	snake_part_len := 20
 	app.snake = Snake{
-		pos_constraints:   []f64{len: snake_len, init: 20}
+		pos_constraints:   []f64{len: snake_len, init: snake_part_len}
 		angle_constraints: []f64{len: snake_len, init: math.pi * 2 / 6}
 		points:            []vec.Vec2[f64]{len: snake_len, init: vec.Vec2[f64]{
-			x: index + app.win_width / 2
-			y: index + app.win_height / 2
+			x: index * snake_part_len + app.win_width / 4
+			y: app.win_height / 3
 		}}
 		velocity:          []vec.Vec2[f64]{len: snake_len}
 	}
@@ -119,11 +120,16 @@ fn on_event(e &gg.Event, mut app App) {
 				.enter {
 					app.run_method = .run
 				}
-				.v{
+				.v {
 					app.render_velocity = !app.render_velocity
 				}
 				else {}
 			}
+		}
+		.mouse_down {
+			// start by getting the head at the mouse
+			proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
+				app.target, 1)
 		}
 		else {}
 	}
@@ -142,9 +148,6 @@ mut:
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	dt := 0.1
-	// start by getting the head at the mouse
-	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-		target, 1)
 	// stock the previous position to calcul the velocity later
 	prec_pos := snake.points.clone()
 	// apply external forces
@@ -159,23 +162,41 @@ fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	}
 }
 
-fn (mut snake Snake) apply_force(dt f64, forces ...vec.Vec2[f64]) {
-	// sum forces
+fn (mut snake Snake) apply_force(dt f64, externals_forces ...vec.Vec2[f64]) {
+	// sum externals_forces
 	mut total := vec.Vec2[f64]{}
-	for force in forces {
+	for force in externals_forces {
 		total += force
 	}
-	// m*a = sum forces
-	acceleration := total.div_scalar(snake.node_weight)
-
-	// dpos = a*dt²/2
 	for i in 0 .. snake.points.len {
-		if 0 < snake.points[i].x && snake.points[i].x < corner.x && 0 < snake.points[i].y
-			&& snake.points[i].y < corner.y {
-			snake.points[i] += acceleration.mul_scalar(dt * dt / 2) +
-				snake.velocity[i].mul_scalar(dt)
+		mut point_total := total
+		if exterior_y(snake.points[i], snake.pos_constraints[i] + 1) {
+			normal := vec.Vec2[f64]{
+				y: 1
+			}
+			point_total = point_total.perpendicular(normal)
+			snake.velocity[i] = snake.velocity[i].perpendicular(normal) - snake.velocity[i].project(normal)
 		}
+		if exterior_x(snake.points[i], snake.pos_constraints[i] + 1) {
+			normal := vec.Vec2[f64]{
+				x: -1
+			}
+			point_total = point_total.perpendicular(normal)
+			snake.velocity[i] = snake.velocity[i].perpendicular(normal) - snake.velocity[i].project(normal)
+		}
+		// m*a = sum forces
+		acceleration := point_total.div_scalar(snake.node_weight)
+		// dpos = a*dt²/2 + v*dt
+		snake.points[i] += acceleration.mul_scalar(dt * dt / 2) + snake.velocity[i].mul_scalar(dt)
 	}
+}
+
+fn exterior_y(point vec.Vec2[f64], radius f64) bool {
+	return 0 + radius > point.y || point.y > corner.y - radius
+}
+
+fn exterior_x(point vec.Vec2[f64], radius f64) bool {
+	return 0 + radius > point.x || point.x > corner.x - radius
 }
 
 fn (snake Snake) render(render_velocity bool, ctx gg.Context) {
