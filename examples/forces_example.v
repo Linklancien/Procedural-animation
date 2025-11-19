@@ -8,9 +8,9 @@ const bg_color = gg.Color{}
 const gravity = vec.Vec2[f64]{
 	y: 10
 }
-const corner= vec.Vec2[f32]{
+const corner = vec.Vec2[f32]{
 	x: 600
-	y: 400
+	y: 600
 }
 
 enum Run_method {
@@ -26,7 +26,7 @@ mut:
 
 	x_mouse    int
 	y_mouse    int
-	win_width  int = int(corner.x) +200
+	win_width  int = int(corner.x) + 200
 	win_height int = int(corner.y) + 200
 
 	target vec.Vec2[f64]
@@ -137,44 +137,21 @@ mut:
 }
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
-	instant := true
-	dt := 0.10
-	if instant{
-		// start by getting the head at the mouse
-		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-			target, 1)
-		// stock the previous position to calcul the velocity later
-		prec_pos := snake.points.clone()
-		// apply external forces
-		snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
-		// apply constrains
-		// proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
-		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-			snake.points[0], 1)
-		// apply the constrains + the change of position of the head
-		for i in 0 .. snake.velocity.len {
-			snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
-		}
-	}
-	else{
-		// stock the previous position to calcul the velocity later
-		prec_pos := snake.points.clone()
-		// apply external forces
-		snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
-		//
-		dif := (target - snake.points[0])
-		fact := 5.0
-		real_target := if dif.magnitude() >= fact {
-			dif.normalize().mul_scalar(fact) + snake.points[0]
-		} else {
-			snake.points[0]
-		}
-		// apply the constrains + the change of position of the head
-		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
-			real_target, 1)
-		for i in 0 .. snake.velocity.len {
-			snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
-		}
+	dt := 0.1
+	// start by getting the head at the mouse
+	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+		target, 1)
+	// stock the previous position to calcul the velocity later
+	prec_pos := snake.points.clone()
+	// apply external forces
+	snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
+	// apply constrains
+	// proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
+	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+		snake.points[0], 1)
+	// apply the constrains + the change of position of the head
+	for i in 0 .. snake.velocity.len {
+		snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
 	}
 }
 
@@ -198,5 +175,15 @@ fn (mut snake Snake) apply_force(dt f64, forces ...vec.Vec2[f64]) {
 }
 
 fn (snake Snake) render(ctx gg.Context) {
-	graphic_debug.angular_render(ctx, snake.points, snake.pos_constraints, gg.white)
+	render_velocity := true
+	if render_velocity {
+		graphic_debug.basic_render(ctx, snake.points, snake.pos_constraints, gg.white)
+		for i, v in snake.velocity {
+			x := snake.points[i].x
+			y := snake.points[i].y
+			ctx.draw_line(f32(x), f32(y), f32(x + v.x), f32(y + v.y), gg.blue)
+		}
+	} else {
+		graphic_debug.angular_render(ctx, snake.points, snake.pos_constraints, gg.white)
+	}
 }
