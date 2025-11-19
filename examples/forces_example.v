@@ -133,29 +133,25 @@ mut:
 
 fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	instant := true
+	dt := 0.10
 	if instant{
 		// start by getting the head at the mouse
 		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
 			target, 1)
-		dt := 1.0
 		// stock the previous position to calcul the velocity later
 		prec_pos := snake.points.clone()
 		// apply external forces
 		snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
 		// apply constrains
 		// proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
-		println('PT')
-		println(snake.points[0])
 		proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
 			snake.points[0], 1)
-		println(snake.points[0])
 		// apply the constrains + the change of position of the head
 		for i in 0 .. snake.velocity.len {
 			snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
 		}
 	}
 	else{
-		dt := 1.0
 		// stock the previous position to calcul the velocity later
 		prec_pos := snake.points.clone()
 		// apply external forces
