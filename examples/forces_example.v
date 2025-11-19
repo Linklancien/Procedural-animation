@@ -8,6 +8,10 @@ const bg_color = gg.Color{}
 const gravity = vec.Vec2[f64]{
 	y: 10
 }
+const corner= vec.Vec2[f32]{
+	x: 600
+	y: 400
+}
 
 enum Run_method {
 	pause
@@ -22,8 +26,8 @@ mut:
 
 	x_mouse    int
 	y_mouse    int
-	win_width  int = 800
-	win_height int = 600
+	win_width  int = int(corner.x) +200
+	win_height int = int(corner.y) + 200
 
 	target vec.Vec2[f64]
 
@@ -80,6 +84,7 @@ fn on_frame(mut app App) {
 	}
 	// Draw
 	app.ctx.begin()
+	app.ctx.draw_rect_filled(0.0, 0.0, corner.x, corner.y, gg.gray)
 	app.snake.render(app.ctx)
 	app.ctx.end()
 }
@@ -184,8 +189,8 @@ fn (mut snake Snake) apply_force(dt f64, forces ...vec.Vec2[f64]) {
 
 	// dpos = a*dt²/2
 	for i in 0 .. snake.points.len {
-		if 0 < snake.points[i].x && snake.points[i].x < 800 && 0 < snake.points[i].y
-			&& snake.points[i].y < 400 {
+		if 0 < snake.points[i].x && snake.points[i].x < corner.x && 0 < snake.points[i].y
+			&& snake.points[i].y < corner.y {
 			snake.points[i] += acceleration.mul_scalar(dt * dt / 2) +
 				snake.velocity[i].mul_scalar(dt)
 		}
