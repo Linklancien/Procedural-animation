@@ -30,6 +30,7 @@ mut:
 	win_height int = int(corner.y) + 200
 
 	target vec.Vec2[f64]
+	move	bool
 
 	snake Snake
 
@@ -76,13 +77,19 @@ fn on_init(mut app App) {
 fn on_frame(mut app App) {
 	match app.run_method {
 		.run {
-			app.snake.update(app.target)
+			app.snake.update(mut app)
 		}
 		.step {
-			app.snake.update(app.target)
+			app.snake.update(mut app)
 			app.run_method = .pause
 		}
-		else {}
+		else {
+			if app.move{
+			proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
+				app.target, 1)
+			app.move = false
+	}
+		}
 	}
 	// Draw
 	app.ctx.begin()
@@ -97,10 +104,6 @@ fn on_event(e &gg.Event, mut app App) {
 	app.win_height = size.height
 
 	app.x_mouse, app.y_mouse = int(e.mouse_x), int(e.mouse_y)
-	app.target = vec.Vec2[f64]{
-		x: app.x_mouse
-		y: app.y_mouse
-	}
 	match e.typ {
 		.key_down {
 			match e.key_code {
@@ -127,9 +130,12 @@ fn on_event(e &gg.Event, mut app App) {
 			}
 		}
 		.mouse_down {
-			// start by getting the head at the mouse
-			proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
-				app.target, 1)
+			// prepare the mouvement
+			app.move = true
+			app.target = vec.Vec2[f64]{
+				x: app.x_mouse
+				y: app.y_mouse
+			}
 		}
 		else {}
 	}
@@ -146,7 +152,7 @@ mut:
 	velocity []vec.Vec2[f64]
 }
 
-fn (mut snake Snake) update(target vec.Vec2[f64]) {
+fn (mut snake Snake) update(mut app App) {
 	dt := 0.1
 	// stock the previous position to calcul the velocity later
 	prec_pos := snake.points.clone()
@@ -159,6 +165,13 @@ fn (mut snake Snake) update(target vec.Vec2[f64]) {
 	// apply the constrains + the change of position of the head
 	for i in 0 .. snake.velocity.len {
 		snake.velocity[i] = (snake.points[i] - prec_pos[i]).div_scalar(dt)
+	}
+
+	// move the head if clicked
+	if app.move{
+		proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
+			app.target, 1)
+		app.move = false
 	}
 }
 
