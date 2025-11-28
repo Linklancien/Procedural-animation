@@ -174,21 +174,23 @@ fn (mut snake Snake) apply_force(dt f64, externals_forces ...vec.Vec2[f64]) {
 			normal := vec.Vec2[f64]{
 				y: 1
 			}
-			point_total = point_total.perpendicular(normal)
-			snake.velocity[i] = snake.velocity[i].perpendicular(normal) - snake.velocity[i].project(normal)
+			point_total, snake.velocity[i] = touch(point_total, snake.velocity[i], normal, 0.7)
 		}
 		if exterior_x(snake.points[i], snake.pos_constraints[i] + 1) {
 			normal := vec.Vec2[f64]{
 				x: -1
 			}
-			point_total = point_total.perpendicular(normal)
-			snake.velocity[i] = snake.velocity[i].perpendicular(normal) - snake.velocity[i].project(normal)
+			point_total, snake.velocity[i] = touch(point_total, snake.velocity[i], normal, 0.7)
 		}
 		// m*a = sum forces
 		acceleration := point_total.div_scalar(snake.node_weight)
 		// dpos = a*dt²/2 + v*dt
 		snake.points[i] += acceleration.mul_scalar(dt * dt / 2) + snake.velocity[i].mul_scalar(dt)
 	}
+}
+
+fn touch(point_total vec.Vec2[f64], velocity vec.Vec2[f64], normal vec.Vec2[f64], compensation f64) (vec.Vec2[f64], vec.Vec2[f64]) {
+	return point_total.perpendicular(normal), velocity.perpendicular(normal) - velocity.project(normal).mul_scalar(compensation)
 }
 
 fn exterior_y(point vec.Vec2[f64], radius f64) bool {
