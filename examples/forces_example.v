@@ -6,7 +6,8 @@ import math.vec
 
 const bg_color = gg.Color{}
 const gravity = vec.Vec2[f64]{
-	y: 10
+	x: 10
+	// y: 10
 }
 const corner = vec.Vec2[f32]{
 	x: 600
@@ -95,6 +96,7 @@ fn on_frame(mut app App) {
 	app.ctx.begin()
 	app.ctx.draw_rect_filled(0.0, 0.0, corner.x, corner.y, gg.gray)
 	app.snake.render(app.render_velocity, app.ctx)
+	app.ctx.draw_circle_filled(corner.x, corner.y, 10, gg.red)
 	app.ctx.end()
 }
 
@@ -183,23 +185,32 @@ fn (mut snake Snake) apply_force(dt f64, externals_forces ...vec.Vec2[f64]) {
 	}
 	for i in 0 .. snake.points.len {
 		mut point_total := total
-		if exterior_y(snake.points[i], snake.pos_constraints[i] + 1) {
-			normal := vec.Vec2[f64]{
-				y: 1
-			}
-			point_total, snake.velocity[i] = touch(point_total, snake.velocity[i], normal, 0.7)
-		}
-		if exterior_x(snake.points[i], snake.pos_constraints[i] + 1) {
-			normal := vec.Vec2[f64]{
-				x: -1
-			}
-			point_total, snake.velocity[i] = touch(point_total, snake.velocity[i], normal, 0.7)
-		}
+		point_total, snake.velocity[i] = boundaries(snake.points[i], point_total, snake.velocity[i], snake.pos_constraints[i])
+		
 		// m*a = sum forces
 		acceleration := point_total.div_scalar(snake.node_weight)
 		// dpos = a*dt²/2 + v*dt
 		snake.points[i] += acceleration.mul_scalar(dt * dt / 2) + snake.velocity[i].mul_scalar(dt)
 	}
+}
+
+fn boundaries(pos vec.Vec2[f64], point_total vec.Vec2[f64], velocity vec.Vec2[f64], radius f64) (vec.Vec2[f64], vec.Vec2[f64]) {
+	mut new_total := point_total
+	mut new_velocity := velocity
+	
+	if exterior_x(pos, radius + 1) {
+		normal := vec.Vec2[f64]{
+			x: -1
+		}
+		new_total, new_velocity = touch(new_total, new_velocity, normal, 0.7)
+	}
+	if exterior_y(pos, radius + 1) {
+		normal := vec.Vec2[f64]{
+			y: 1
+		}
+		new_total, new_velocity = touch(new_total, new_velocity, normal, 0.7)
+	}
+	return new_total, new_velocity
 }
 
 fn touch(point_total vec.Vec2[f64], velocity vec.Vec2[f64], normal vec.Vec2[f64], compensation f64) (vec.Vec2[f64], vec.Vec2[f64]) {
