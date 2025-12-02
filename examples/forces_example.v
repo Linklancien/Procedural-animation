@@ -6,13 +6,31 @@ import math.vec
 
 const bg_color = gg.Color{}
 const gravity = vec.Vec2[f64]{
-	x: 10
-	// y: 10
+	// x: 10
+	y: 10
 }
 const corner = vec.Vec2[f32]{
 	x: 600
 	y: 600
 }
+const surfaces = [
+	Surfaces{
+		point:  vec.Vec2[f64]{
+			y: corner.y
+		}
+		normal: vec.Vec2[f64]{
+			y: 1
+		}
+	},
+	Surfaces{
+		point:  vec.Vec2[f64]{
+			x: corner.x
+		}
+		normal: vec.Vec2[f64]{
+			x: -1
+		}
+	},
+]
 
 enum Run_method {
 	pause
@@ -31,7 +49,7 @@ mut:
 	win_height int = int(corner.y) + 200
 
 	target vec.Vec2[f64]
-	move	bool
+	move   bool
 
 	snake Snake
 
@@ -85,11 +103,11 @@ fn on_frame(mut app App) {
 			app.run_method = .pause
 		}
 		else {
-			if app.move{
-			proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
-				app.target, 1)
-			app.move = false
-	}
+			if app.move {
+				proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints,
+					app.snake.angle_constraints, app.target, 1)
+				app.move = false
+			}
 		}
 	}
 	// Draw
@@ -154,6 +172,19 @@ mut:
 	velocity []vec.Vec2[f64]
 }
 
+fn (snake Snake) render(render_velocity bool, ctx gg.Context) {
+	if render_velocity {
+		graphic_debug.basic_render(ctx, snake.points, snake.pos_constraints, gg.white)
+		for i, v in snake.velocity {
+			x := snake.points[i].x
+			y := snake.points[i].y
+			ctx.draw_line(f32(x), f32(y), f32(x + v.x), f32(y + v.y), gg.blue)
+		}
+	} else {
+		graphic_debug.angular_render(ctx, snake.points, snake.pos_constraints, gg.white)
+	}
+}
+
 fn (mut snake Snake) update(mut app App) {
 	dt := 0.1
 	// stock the previous position to calcul the velocity later
@@ -170,7 +201,7 @@ fn (mut snake Snake) update(mut app App) {
 	}
 
 	// move the head if clicked
-	if app.move{
+	if app.move {
 		proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
 			app.target, 1)
 		app.move = false
@@ -185,8 +216,9 @@ fn (mut snake Snake) apply_force(dt f64, externals_forces ...vec.Vec2[f64]) {
 	}
 	for i in 0 .. snake.points.len {
 		mut point_total := total
-		point_total, snake.velocity[i] = boundaries(snake.points[i], point_total, snake.velocity[i], snake.pos_constraints[i])
-		
+		point_total, snake.velocity[i] = boundaries(snake.points[i], point_total, snake.velocity[i],
+			snake.pos_constraints[i])
+
 		// m*a = sum forces
 		acceleration := point_total.div_scalar(snake.node_weight)
 		// dpos = a*dt²/2 + v*dt
@@ -194,21 +226,20 @@ fn (mut snake Snake) apply_force(dt f64, externals_forces ...vec.Vec2[f64]) {
 	}
 }
 
+// collisions:
+struct Surfaces {
+	point  vec.Vec2[f64]
+	normal vec.Vec2[f64]
+}
+
 fn boundaries(pos vec.Vec2[f64], point_total vec.Vec2[f64], velocity vec.Vec2[f64], radius f64) (vec.Vec2[f64], vec.Vec2[f64]) {
 	mut new_total := point_total
 	mut new_velocity := velocity
-	
-	if exterior_x(pos, radius + 1) {
-		normal := vec.Vec2[f64]{
-			x: -1
+	for surface in surfaces {
+		dist := distance(surface.point, surface.normal, pos)
+		if dist < radius {
+			new_total, new_velocity = touch(new_total, new_velocity, surface.normal, 0.7)
 		}
-		new_total, new_velocity = touch(new_total, new_velocity, normal, 0.7)
-	}
-	if exterior_y(pos, radius + 1) {
-		normal := vec.Vec2[f64]{
-			y: 1
-		}
-		new_total, new_velocity = touch(new_total, new_velocity, normal, 0.7)
 	}
 	return new_total, new_velocity
 }
@@ -217,23 +248,8 @@ fn touch(point_total vec.Vec2[f64], velocity vec.Vec2[f64], normal vec.Vec2[f64]
 	return point_total.perpendicular(normal), velocity.perpendicular(normal) - velocity.project(normal).mul_scalar(compensation)
 }
 
-fn exterior_y(point vec.Vec2[f64], radius f64) bool {
-	return 0 + radius > point.y || point.y > corner.y - radius
-}
-
-fn exterior_x(point vec.Vec2[f64], radius f64) bool {
-	return 0 + radius > point.x || point.x > corner.x - radius
-}
-
-fn (snake Snake) render(render_velocity bool, ctx gg.Context) {
-	if render_velocity {
-		graphic_debug.basic_render(ctx, snake.points, snake.pos_constraints, gg.white)
-		for i, v in snake.velocity {
-			x := snake.points[i].x
-			y := snake.points[i].y
-			ctx.draw_line(f32(x), f32(y), f32(x + v.x), f32(y + v.y), gg.blue)
-		}
-	} else {
-		graphic_debug.angular_render(ctx, snake.points, snake.pos_constraints, gg.white)
-	}
+fn distance(point_plan vec.Vec2[f64], normal vec.Vec2[f64], point vec.Vec2[f64]) f64 {
+	diff := point - point_plan
+	distance := diff.project(normal).magnitude()
+	return distance
 }
