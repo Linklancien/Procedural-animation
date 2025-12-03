@@ -77,7 +77,7 @@ fn main() {
 	app.dia = gg_plot.plot([[f32(0.0)]], [[f32(0.0)]], [gg.red])
 	app.dia.change_pos(corner.x + 10, 50)
 	app.dia.change_size(600, 500)
-	app.dia.border_size(40)
+	app.dia.border_size(60)
 	app.dia.corner_size(10)
 	app.dia.title(' Velocity of the head ')
 	app.dia.x_label('time')
@@ -134,9 +134,9 @@ fn on_frame(mut app App) {
 
 fn (mut app App) add_value() {
 	app.time += 1
-	mag := app.snake.velocity[0].magnitude()*1000
+	id_check := app.snake.velocity.len - 1
+	mag := f32(app.snake.velocity[id_check].magnitude())
 	app.dia.extend_curve(0, [app.time], [mag])
-	println('$app.time; ${mag}')
 }
 
 fn on_event(e &gg.Event, mut app App) {
