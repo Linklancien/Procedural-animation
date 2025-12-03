@@ -236,9 +236,10 @@ fn boundaries(pos vec.Vec2[f64], point_total vec.Vec2[f64], velocity vec.Vec2[f6
 	mut new_total := point_total
 	mut new_velocity := velocity
 	for surface in surfaces {
-		dist := distance(surface.point, surface.normal, pos)
-		if dist < radius {
+		dist := distance(surface.point, surface.normal, pos) - radius
+		if dist < 0 {
 			new_total, new_velocity = touch(new_total, new_velocity, surface.normal, 0.7)
+			// new_total += surface.normal.mul_scalar(-dist)
 		}
 	}
 	return new_total, new_velocity
