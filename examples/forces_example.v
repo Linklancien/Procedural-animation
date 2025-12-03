@@ -1,5 +1,6 @@
 import gg
 import linklancien.proc_anim
+import linklancien.gg_plot
 import graphic_debug
 import math
 import math.vec
@@ -55,6 +56,8 @@ mut:
 
 	run_method      Run_method = .pause
 	render_velocity bool       = true
+	dia gg_plot.Diagram
+	time f32
 }
 
 fn main() {
@@ -71,6 +74,14 @@ fn main() {
 		event_fn:      on_event
 		sample_count:  2
 	)
+	app.dia = gg_plot.plot([[f32(0.0)]], [[f32(0.0)]], [gg.red])
+	app.dia.change_pos(corner.x + 10, 50)
+	app.dia.change_size(600, 500)
+	app.dia.border_size(40)
+	app.dia.corner_size(10)
+	app.dia.title(' Velocity of the head ')
+	app.dia.x_label('time')
+	app.dia.y_label('Magnitude')
 
 	app.ctx.run()
 }
@@ -97,10 +108,12 @@ fn on_frame(mut app App) {
 	match app.run_method {
 		.run {
 			app.snake.update(mut app)
+			app.add_value()
 		}
 		.step {
 			app.snake.update(mut app)
 			app.run_method = .pause
+			app.add_value()
 		}
 		else {
 			if app.move {
@@ -115,7 +128,15 @@ fn on_frame(mut app App) {
 	app.ctx.draw_rect_filled(0.0, 0.0, corner.x, corner.y, gg.gray)
 	app.snake.render(app.render_velocity, app.ctx)
 	app.ctx.draw_circle_filled(corner.x, corner.y, 10, gg.red)
+	app.dia.render(app.ctx)
 	app.ctx.end()
+}
+
+fn (mut app App) add_value() {
+	app.time += 1
+	mag := app.snake.velocity[0].magnitude()*1000
+	app.dia.extend_curve(0, [app.time], [mag])
+	println('$app.time; ${mag}')
 }
 
 fn on_event(e &gg.Event, mut app App) {
