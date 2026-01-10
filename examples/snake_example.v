@@ -115,6 +115,6 @@ fn (mut snake Snake) update(target vec.Vec2[f64]) {
 
 fn (snake Snake) render(ctx gg.Context) {
 	// graphic_debug.basic_render(ctx, snake.points, snake.pos_constraints, gg.white)
-	graphic_debug.angular_render(ctx, snake.points, snake.pos_constraints, gg.white)
-	// graphic_debug.filled_render(ctx, snake.points, snake.pos_constraints, gg.white)
+	// graphic_debug.angular_render(ctx, snake.points, snake.pos_constraints, gg.white)
+	graphic_debug.filled_render(ctx, snake.points, snake.pos_constraints, gg.white)
 }

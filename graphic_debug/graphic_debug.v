@@ -1,6 +1,7 @@
 module graphic_debug
 
 import gg
+import sokol.sgl
 import math { cos, sin }
 import math.vec
 
@@ -29,4 +30,29 @@ pub fn angular_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, colo
 			color)
 		ctx.draw_line(x, y, x2, y2, gg.red)
 	}
+}
+
+pub fn filled_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.Color){
+  if c.a != 255 {
+		sgl.load_pipeline(ctx.pipeline.alpha)
+	}
+	sgl.c4b(c.r, c.g, c.b, c.a)
+ 
+	sgl.begin_triangles()
+	for i, point in points {
+		rotation := if i != points.len - 1 {
+			(point - points[i + 1]).angle()
+		} else {
+			(points[i - 1] - point).angle()
+		}
+		x := f32(point.x)
+		y := f32(point.y)
+		x1 := x + f32(radius[i] * cos(rotation))
+		y1:= y + f32(radius[i] * sin(rotation))
+		x2 := x + f32(radius[i] * cos(rotation))
+		y2 := y - f32(radius[i] * sin(rotation))
+  	sgl.v2f(x1, y1)
+  	sgl.v2f(x2, y2)
+	}
+	sgl.end()
 }
