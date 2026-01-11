@@ -46,13 +46,22 @@ fn on_init(mut app App) {
 
 	snake_len := 20
 	app.snake = Snake{
-		pos_constraints:   []f64{len: snake_len, init: 20}
+		pos_constraints:   []f64{len: snake_len, init: app.create_body(index, snake_len)}
 		angle_constraints: []f64{len: snake_len, init: math.pi * 2 / 6}
 		points:            []vec.Vec2[f64]{len: snake_len, init: vec.Vec2[f64]{
 			x: index + app.win_width / 2
 			y: index + app.win_height / 2
 		}}
 	}
+}
+
+fn (app App) create_body(i int, len int) f64{
+  if i == 0{
+    return 25
+  }
+  else{
+    return len - i
+  }
 }
 
 fn on_frame(mut app App) {
