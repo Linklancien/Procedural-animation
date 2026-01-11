@@ -37,8 +37,31 @@ pub fn filled_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.
 		sgl.load_pipeline(ctx.pipeline.alpha)
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
+	sgl.begin_triangle_strip ()
+	
+	x0 := f32(points[0].x)
+	y0 := f32(points[0].y)
  
-	sgl.begin_triangles()
+	rot := (points[0] - points[1]).angle()
+	angles := [-math.pi/2, math.pi/4, -math.pi/4, math.pi/2]
+	for angle in angles{
+	  xc := x0 + f32(radius[0] * cos(rot + angle))
+		yc := y0 + f32(radius[0] * sin(rot + angle))
+		sgl.v2f(xc, yc)
+	}
+  // x20 := x0 + f32(radius[0] * cos(rot - math.pi/2))
+  // y20 := y0 + f32(radius[0] * sin(rot - math.pi/2))
+  // sgl.v2f(x20, y20)
+  // x02 := x0 + f32(radius[0] * cos(rot + math.pi/4))
+  // y02 := y0 + f32(radius[0] * sin(rot + math.pi/4))
+  // sgl.v2f(x02, y02)
+ 	// x01 := x0 + f32(radius[0] * cos(rot - math.pi/4))
+  // y01 := y0 + f32(radius[0] * sin(rot - math.pi/4))
+  // sgl.v2f(x01, y01)
+ 	// x10 := x0 + f32(radius[0] * cos(rot + math.pi/2))
+  // y10 := y0 + f32(radius[0] * sin(rot + math.pi/2))
+  // sgl.v2f(x10, y10)
+  
 	for i, point in points {
 		rotation := if i != points.len - 1 {
 			(point - points[i + 1]).angle()
@@ -47,12 +70,20 @@ pub fn filled_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.
 		}
 		x := f32(point.x)
 		y := f32(point.y)
-		x1 := x + f32(radius[i] * cos(rotation))
-		y1:= y + f32(radius[i] * sin(rotation))
-		x2 := x + f32(radius[i] * cos(rotation))
-		y2 := y - f32(radius[i] * sin(rotation))
-  	sgl.v2f(x1, y1)
-  	sgl.v2f(x2, y2)
+		
+		x1 := x + f32(radius[i] * cos(rotation + math.pi/2))
+		y1:= y + f32(radius[i] * sin(rotation + math.pi/2))
+		x2 := x + f32(radius[i] * cos(rotation - math.pi/2))
+		y2 := y + f32(radius[i] * sin(rotation - math.pi/2))
+		
+    sgl.v2f(x1, y1)
+    sgl.v2f(x2, y2)
+  	
+    if i ==  points.len - 1{
+     	xf := x + f32(radius[i] * cos(rotation + math.pi))
+      yf := y + f32(radius[i] * sin(rotation + math.pi))
+      sgl.v2f(xf, yf)
+    }
 	}
 	sgl.end()
 }
