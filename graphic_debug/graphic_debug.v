@@ -50,7 +50,7 @@ pub fn filled_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.
 		sgl.v2f(xc, yc)
 	}
   
-	for i, point in pointsv {
+	for i, point in points {
 		rotation := if i != points.len - 1 {
 			(point - points[i + 1]).angle()
 		} else {
