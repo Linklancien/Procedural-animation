@@ -43,24 +43,12 @@ pub fn filled_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.
 	y0 := f32(points[0].y)
  
 	rot := (points[0] - points[1]).angle()
-	angles := [-math.pi/2, math.pi/4, -math.pi/4, math.pi/2]
+	angles := [math.pi/4, -math.pi/4, math.pi/2, -math.pi/2]
 	for angle in angles{
 	  xc := x0 + f32(radius[0] * cos(rot + angle))
 		yc := y0 + f32(radius[0] * sin(rot + angle))
 		sgl.v2f(xc, yc)
 	}
-  // x20 := x0 + f32(radius[0] * cos(rot - math.pi/2))
-  // y20 := y0 + f32(radius[0] * sin(rot - math.pi/2))
-  // sgl.v2f(x20, y20)
-  // x02 := x0 + f32(radius[0] * cos(rot + math.pi/4))
-  // y02 := y0 + f32(radius[0] * sin(rot + math.pi/4))
-  // sgl.v2f(x02, y02)
- 	// x01 := x0 + f32(radius[0] * cos(rot - math.pi/4))
-  // y01 := y0 + f32(radius[0] * sin(rot - math.pi/4))
-  // sgl.v2f(x01, y01)
- 	// x10 := x0 + f32(radius[0] * cos(rot + math.pi/2))
-  // y10 := y0 + f32(radius[0] * sin(rot + math.pi/2))
-  // sgl.v2f(x10, y10)
   
 	for i, point in points {
 		rotation := if i != points.len - 1 {
