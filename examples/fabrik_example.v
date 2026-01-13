@@ -44,7 +44,7 @@ fn on_init(mut app App) {
 	app.win_width = size.width
 	app.win_height = size.height
 
-	arm_len := 20
+	arm_len := 10
 	app.arm = Arm{
 		pos_constraints:   []f64{len: arm_len, init: 20}
 		angle_constraints: []f64{len: arm_len, init: math.pi * 2 / 6}
