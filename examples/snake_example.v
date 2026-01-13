@@ -92,17 +92,6 @@ fn on_event(e &gg.Event, mut app App) {
 				.f4 {
 					app.ctx.quit()
 				}
-				.escape {}
-				.backspace {}
-				.right {}
-				.left {}
-				.space {}
-				else {}
-			}
-		}
-		.mouse_down {
-			match e.mouse_button {
-				.left {}
 				else {}
 			}
 		}
