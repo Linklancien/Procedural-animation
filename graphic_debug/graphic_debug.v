@@ -30,4 +30,3 @@ pub fn angular_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, colo
 		ctx.draw_line(x, y, x2, y2, gg.red)
 	}
 }
-

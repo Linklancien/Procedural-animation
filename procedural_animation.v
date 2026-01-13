@@ -9,18 +9,17 @@ const origin = vec.vec2(f64(0.0), f64(0.0))
 
 // fabrik implements the FABRIK algorythme, multiples front_go_to, back_go_to
 pub fn fabrik(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64, target vec.Vec2[f64], repetition int) {
-  base := points[points.len - 1]
-  for _ in 0 .. repetition {
-    points[0] = target
-  
+	base := points[points.len - 1]
+	for _ in 0 .. repetition {
+		points[0] = target
+
 		anchor_front_to_back(mut points, pos_constraints, angle_constraints)
-		
+
 		points[points.len - 1] = base
 
 		anchor_back_to_front(mut points, pos_constraints, angle_constraints)
-  }
+	}
 }
-
 
 // front_go_to set the first point at a target point and update all points so it doesn't break the constraints
 pub fn front_go_to(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64, target vec.Vec2[f64], repetition int) {
@@ -55,7 +54,8 @@ pub fn anchor_front_to_back(mut points []vec.Vec2[f64], pos_constraints []f64, a
 pub fn anchor_back_to_front(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64) {
 	p := points.len - 1
 	for ip in 0 .. points.len - 2 {
-		points[p - (ip + 1)] = apply_pos_constraint(points[p - ip], points[p - (ip + 1)], pos_constraints[p - ip])
+		points[p - (ip + 1)] = apply_pos_constraint(points[p - ip], points[p - (ip + 1)],
+			pos_constraints[p - ip])
 		points[p - (ip + 2)] = apply_angle_constraint(points[p - ip], points[p - (ip + 1)],
 			points[p - (ip + 2)], angle_constraints[ip])
 	}

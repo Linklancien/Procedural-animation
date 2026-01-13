@@ -56,8 +56,8 @@ mut:
 
 	run_method      Run_method = .pause
 	render_velocity bool       = true
-	dia gg_plot.Diagram
-	time f32
+	dia             gg_plot.Diagram
+	time            f32
 }
 
 fn main() {
