@@ -130,6 +130,15 @@ pub fn front_go_to(mut points []vec.Vec2[f64], pos_constraints []f64, angle_cons
 	}
 }
 
+// back_go_to set the last point at a target point and update all points so it doesn't break the constraints
+pub fn back_go_to(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64, target vec.Vec2[f64], repetition int) {
+	for _ in 0 .. repetition {
+		points[points.len - 1] = target
+
+		anchor_back_to_front(mut points, pos_constraints, angle_constraints)
+	}
+}
+
 pub fn anchor_front_to_back(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64) {
 	for ip in 0 .. points.len - 2 {
 		points[ip + 1] = apply_pos_constraint(points[ip], points[ip + 1], pos_constraints[ip])
@@ -138,6 +147,16 @@ pub fn anchor_front_to_back(mut points []vec.Vec2[f64], pos_constraints []f64, a
 	}
 	points[points.len - 1] = apply_pos_constraint(points[points.len - 2], points[points.len - 1],
 		pos_constraints[points.len - 2])
+}
+
+pub fn anchor_back_to_front(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64) {
+	p := points.len - 1
+	for ip in 0 .. points.len - 2 {
+		points[p - ip] = apply_pos_constraint(points[p - (ip + 1)], points[p - ip], pos_constraints[p - ip])
+		points[p - ip] = apply_angle_constraint(points[p - (ip + 2)], points[p - (ip + 1)],
+			points[p - ip], angle_constraints[ip])
+	}
+	points[0] = apply_pos_constraint(points[0], points[1], pos_constraints[1])
 }
 
 pub fn anchor_front_to_back_min_max(mut points []vec.Vec2[f64], pos_constraints []f64, min_constraints []f64, max_constraints []f64) {
