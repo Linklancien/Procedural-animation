@@ -46,8 +46,8 @@ mut:
 
 	x_mouse    int
 	y_mouse    int
-	win_width  int = int(corner.x) + 200
-	win_height int = int(corner.y) + 200
+	win_width  int = int(corner.x) + 700
+	win_height int = int(corner.y) + 50
 
 	target vec.Vec2[f64]
 	move   bool
@@ -97,7 +97,7 @@ fn on_init(mut app App) {
 		pos_constraints:   []f64{len: snake_len, init: snake_part_len}
 		angle_constraints: []f64{len: snake_len, init: math.pi * 2 / 6}
 		points:            []vec.Vec2[f64]{len: snake_len, init: vec.Vec2[f64]{
-			x: index * snake_part_len + app.win_width / 4
+			x: index * snake_part_len + app.win_width / 7
 			y: app.win_height / 3
 		}}
 		velocity:          []vec.Vec2[f64]{len: snake_len}
