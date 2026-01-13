@@ -7,6 +7,21 @@ const origin = vec.vec2(f64(0.0), f64(0.0))
 
 // USED:
 
+// fabrik implements the FABRIK algorythme, multiples front_go_to, back_go_to
+pub fn fabrik(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64, target vec.Vec2[f64], repetition int) {
+  base := points[points.len - 1]
+  for _ in 0 .. repetition {
+    points[0] = target
+  
+		anchor_front_to_back(mut points, pos_constraints, angle_constraints)
+		
+		points[points.len - 1] = base
+
+		anchor_back_to_front(mut points, pos_constraints, angle_constraints)
+  }
+}
+
+
 // front_go_to set the first point at a target point and update all points so it doesn't break the constraints
 pub fn front_go_to(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64, target vec.Vec2[f64], repetition int) {
 	for _ in 0 .. repetition {
