@@ -152,11 +152,11 @@ pub fn anchor_front_to_back(mut points []vec.Vec2[f64], pos_constraints []f64, a
 pub fn anchor_back_to_front(mut points []vec.Vec2[f64], pos_constraints []f64, angle_constraints []f64) {
 	p := points.len - 1
 	for ip in 0 .. points.len - 2 {
-		points[p - ip] = apply_pos_constraint(points[p - (ip + 1)], points[p - ip], pos_constraints[p - ip])
-		points[p - ip] = apply_angle_constraint(points[p - (ip + 2)], points[p - (ip + 1)],
-			points[p - ip], angle_constraints[ip])
+		points[p - (ip + 1)] = apply_pos_constraint(points[p - ip], points[p - (ip + 1)], pos_constraints[p - ip])
+		points[p - (ip + 2)] = apply_angle_constraint(points[p - ip], points[p - (ip + 1)],
+			points[p - (ip + 2)], angle_constraints[ip])
 	}
-	points[0] = apply_pos_constraint(points[0], points[1], pos_constraints[1])
+	points[0] = apply_pos_constraint(points[1], points[0], pos_constraints[0])
 }
 
 pub fn anchor_front_to_back_min_max(mut points []vec.Vec2[f64], pos_constraints []f64, min_constraints []f64, max_constraints []f64) {
