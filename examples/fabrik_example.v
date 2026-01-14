@@ -125,6 +125,8 @@ pub fn arm_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.Col
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
 	sgl.begin_triangle_strip()
+
+	max := points.len - 1
 	for i, point in points {
 		match i {
 			0 {
@@ -140,9 +142,27 @@ pub fn arm_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.Col
 					sgl.v2f(xc, yc)
 				}
 			}
-			// max {
-			//   println('max')
-			// }
+			max {
+				rotation := if i != points.len - 1 {
+					(point - points[i + 1]).angle()
+				} else {
+					(points[i - 1] - point).angle()
+				}
+				x := f32(point.x)
+				y := f32(point.y)
+
+				x1 := x + f32(radius[i] * cos(rotation + math.pi / 2))
+				y1 := y + f32(radius[i] * sin(rotation + math.pi / 2))
+				x2 := x + f32(radius[i] * cos(rotation - math.pi / 2))
+				y2 := y + f32(radius[i] * sin(rotation - math.pi / 2))
+
+				sgl.v2f(x1, y1)
+				sgl.v2f(x2, y2)
+
+				xf := x + f32(radius[i] * cos(rotation + math.pi))
+				yf := y + f32(radius[i] * sin(rotation + math.pi))
+				sgl.v2f(xf, yf)
+			}
 			else {
 				rotation := if i != points.len - 1 {
 					(point - points[i + 1]).angle()
