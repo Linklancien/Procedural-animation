@@ -163,14 +163,8 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 				x := f32(point.x)
 				y := f32(point.y)
 
-				x1 := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi / 2))
-				y1 := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi / 2))
-				x2 := x + f32(arm.pos_constraints[i] * cos(rotation - math.pi / 2))
-				y2 := y + f32(arm.pos_constraints[i] * sin(rotation - math.pi / 2))
-
-				sgl.v2f(x1, y1)
-				sgl.v2f(x2, y2)
-
+				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
+				
 				xf := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi))
 				yf := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi))
 				sgl.v2f(xf, yf)
@@ -184,15 +178,19 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 				x := f32(point.x)
 				y := f32(point.y)
 
-				x1 := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi / 2))
-				y1 := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi / 2))
-				x2 := x + f32(arm.pos_constraints[i] * cos(rotation - math.pi / 2))
-				y2 := y + f32(arm.pos_constraints[i] * sin(rotation - math.pi / 2))
-
-				sgl.v2f(x1, y1)
-				sgl.v2f(x2, y2)
+				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
 			}
 		}
 	}
 	sgl.end()
+}
+
+fn add_opposing_points(x f32, y f32,radius f32, rotation f64){
+  x1 := x + f32(radius * cos(rotation + math.pi / 2))
+	y1 := y + f32(radius * sin(rotation + math.pi / 2))
+	x2 := x + f32(radius * cos(rotation - math.pi / 2))
+	y2 := y + f32(radius * sin(rotation - math.pi / 2))
+
+	sgl.v2f(x1, y1)
+	sgl.v2f(x2, y2)
 }
