@@ -107,6 +107,18 @@ struct Arm {
 	angle_constraints []f64
 mut:
 	points []vec.Vec2[f64]
+	// fingers are attached at the first node with a certain angle
+	fingers        []Finger = []Finger{len: 4}
+	fingers_angles []f64    = []
+}
+
+const finger_len = 4
+const finger_thickness = 5
+const finger_angle = math.pi * 2 / 6
+
+struct Finger {
+	pos_constraints   []f64 = []f64{len: finger_len, init: finger_thickness}
+	angle_constraints []f64 = []f64{len: finger_len, init: finger_angle}
 }
 
 fn (mut arm Arm) update(target vec.Vec2[f64]) {
@@ -116,75 +128,69 @@ fn (mut arm Arm) update(target vec.Vec2[f64]) {
 
 fn (arm Arm) render(ctx gg.Context) {
 	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.white)
-	arm_render(ctx, arm.points, arm.pos_constraints, gg.white)
+	arm.draw(ctx, gg.white)
 }
 
-pub fn arm_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.Color) {
+fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 	if c.a != 255 {
 		sgl.load_pipeline(ctx.pipeline.alpha)
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
 	sgl.begin_triangle_strip()
 
-	max := points.len - 1
-	for i, point in points {
+	max := arm.points.len - 1
+	for i, point in arm.points {
 		match i {
 			0 {
 				x0 := f32(point.x)
 				y0 := f32(point.y)
 
-				rot := (point - points[1]).angle()
+				rot := (point - arm.points[1]).angle()
 				angles := [math.pi / 6, -math.pi / 6, math.pi / 4, -math.pi / 4, math.pi / 2,
 					-math.pi / 2]
 				for angle in angles {
-					xc := x0 + f32(radius[0] * cos(rot + angle))
-					yc := y0 + f32(radius[0] * sin(rot + angle))
+					xc := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
+					yc := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
 					sgl.v2f(xc, yc)
 				}
 			}
 			max {
-				rotation := if i != points.len - 1 {
-					(point - points[i + 1]).angle()
+				rotation := if i != arm.points.len - 1 {
+					(point - arm.points[i + 1]).angle()
 				} else {
-					(points[i - 1] - point).angle()
+					(arm.points[i - 1] - point).angle()
 				}
 				x := f32(point.x)
 				y := f32(point.y)
 
-				x1 := x + f32(radius[i] * cos(rotation + math.pi / 2))
-				y1 := y + f32(radius[i] * sin(rotation + math.pi / 2))
-				x2 := x + f32(radius[i] * cos(rotation - math.pi / 2))
-				y2 := y + f32(radius[i] * sin(rotation - math.pi / 2))
+				x1 := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi / 2))
+				y1 := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi / 2))
+				x2 := x + f32(arm.pos_constraints[i] * cos(rotation - math.pi / 2))
+				y2 := y + f32(arm.pos_constraints[i] * sin(rotation - math.pi / 2))
 
 				sgl.v2f(x1, y1)
 				sgl.v2f(x2, y2)
 
-				xf := x + f32(radius[i] * cos(rotation + math.pi))
-				yf := y + f32(radius[i] * sin(rotation + math.pi))
+				xf := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi))
+				yf := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi))
 				sgl.v2f(xf, yf)
 			}
 			else {
-				rotation := if i != points.len - 1 {
-					(point - points[i + 1]).angle()
+				rotation := if i != arm.points.len - 1 {
+					(point - arm.points[i + 1]).angle()
 				} else {
-					(points[i - 1] - point).angle()
+					(arm.points[i - 1] - point).angle()
 				}
 				x := f32(point.x)
 				y := f32(point.y)
 
-				x1 := x + f32(radius[i] * cos(rotation + math.pi / 2))
-				y1 := y + f32(radius[i] * sin(rotation + math.pi / 2))
-				x2 := x + f32(radius[i] * cos(rotation - math.pi / 2))
-				y2 := y + f32(radius[i] * sin(rotation - math.pi / 2))
+				x1 := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi / 2))
+				y1 := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi / 2))
+				x2 := x + f32(arm.pos_constraints[i] * cos(rotation - math.pi / 2))
+				y2 := y + f32(arm.pos_constraints[i] * sin(rotation - math.pi / 2))
 
 				sgl.v2f(x1, y1)
 				sgl.v2f(x2, y2)
-
-				if i == points.len - 1 {
-					xf := x + f32(radius[i] * cos(rotation + math.pi))
-					yf := y + f32(radius[i] * sin(rotation + math.pi))
-					sgl.v2f(xf, yf)
-				}
 			}
 		}
 	}
