@@ -11,6 +11,12 @@ pub fn basic_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, color 
 	}
 }
 
+pub fn basic_render_at(ctx gg.Context, x f32, y f32, points []vec.Vec2[f64], radius []f64, color gg.Color) {
+	for i, point in points {
+		ctx.draw_circle_empty(f32(point.x) + x, f32(point.y) + y, f32(radius[i]), color)
+	}
+}
+
 // Render all points as triangles pointing in the direction of the next point in the list
 pub fn angular_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, color gg.Color) {
 	edges := 3

@@ -109,7 +109,7 @@ mut:
 	points []vec.Vec2[f64]
 	// fingers are attached at the first node with a certain angle
 	fingers        []Finger = []Finger{len: 4}
-	fingers_angles []f64    = []
+	fingers_angles []f64    = [0.0]
 }
 
 const finger_len = 4
@@ -120,17 +120,29 @@ struct Finger {
 	pos_constraints   []f64 = []f64{len: finger_len, init: finger_thickness}
 	angle_constraints []f64 = []f64{len: finger_len, init: finger_angle}
 mut:
-	points []vec.Vec2[f64]
+	points []vec.Vec2[f64] = []vec.Vec2[f64]{len: finger_len, init: vec.Vec2[f64]{
+		x: index
+		y: index
+	}}
 }
 
 fn (mut arm Arm) update(target vec.Vec2[f64]) {
 	proc_anim.fabrik(mut arm.points, arm.pos_constraints, arm.angle_constraints, target,
 		1)
+	for finger in arm.fingers{
+	  proc_anim.fabrik(mut arm.points, arm.pos_constraints, arm.angle_constraints, target,
+				1)
+	}
 }
 
 fn (arm Arm) render(ctx gg.Context) {
-	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.white)
-	arm.draw(ctx, gg.white)
+	// arm.draw(ctx, gg.white)
+	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
+	for id, finger in arm.fingers{
+	  x := 300
+		y := 300
+	  graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
+	}
 }
 
 fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
@@ -148,12 +160,12 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 				y0 := f32(point.y)
 
 				rot := (point - arm.points[1]).angle()
-				angles := [math.pi / 6, -math.pi / 6, math.pi / 4, -math.pi / 4, math.pi / 2,
-					-math.pi / 2]
-				for angle in angles {
-					xc := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
-					yc := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
-					sgl.v2f(xc, yc)
+				add_opposing_points(x0, y0, f32(arm.pos_constraints[i]), rot)
+				for id, angle in arm.fingers_angles {
+				  x := x0 + f32(arm.pos_constraints[i] * cos(rot + angle))
+					y := y0 + f32(arm.pos_constraints[i] * sin(rot + angle))
+					
+					arm.fingers[id].draw(ctx, x, y)
 				}
 			}
 			max {
@@ -197,7 +209,8 @@ fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
 	sgl.v2f(x2, y2)
 }
 
-fn (finger Finger) draw(x f32, y f32) {
+fn (finger Finger) draw(ctx gg.Context, x f32, y f32) {
+  // graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
 	for i, point in finger.points {
 		match i {
 			-1 {}
@@ -209,8 +222,8 @@ fn (finger Finger) draw(x f32, y f32) {
 				}
 				x_real := f32(point.x) + x
 				y_real := f32(point.y) + y
-
-				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				// println('$x_real, $y_real')
+				add_opposing_points(x_real, y_real, f32(finger.pos_constraints[i]), rotation)
 			}
 		}
 	}
