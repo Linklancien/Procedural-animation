@@ -121,27 +121,28 @@ struct Finger {
 	angle_constraints []f64 = []f64{len: finger_len, init: finger_angle}
 mut:
 	points []vec.Vec2[f64] = []vec.Vec2[f64]{len: finger_len, init: vec.Vec2[f64]{
-		x: index
-		y: index
-	}}
+	x: index
+	y: index
+}}
 }
 
 fn (mut arm Arm) update(target vec.Vec2[f64]) {
 	proc_anim.fabrik(mut arm.points, arm.pos_constraints, arm.angle_constraints, target,
 		1)
-	for finger in arm.fingers{
-	  proc_anim.fabrik(mut arm.points, arm.pos_constraints, arm.angle_constraints, target,
-				1)
+	for mut finger in arm.fingers {
+		proc_anim.fabrik(mut finger.points, finger.pos_constraints, finger.angle_constraints,
+			target, 1)
 	}
 }
 
 fn (arm Arm) render(ctx gg.Context) {
 	// arm.draw(ctx, gg.white)
 	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
-	for id, finger in arm.fingers{
-	  x := 300
+	for finger in arm.fingers {
+		x := 300
 		y := 300
-	  graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
+		graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints,
+			gg.red)
 	}
 }
 
@@ -162,9 +163,9 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 				rot := (point - arm.points[1]).angle()
 				add_opposing_points(x0, y0, f32(arm.pos_constraints[i]), rot)
 				for id, angle in arm.fingers_angles {
-				  x := x0 + f32(arm.pos_constraints[i] * cos(rot + angle))
+					x := x0 + f32(arm.pos_constraints[i] * cos(rot + angle))
 					y := y0 + f32(arm.pos_constraints[i] * sin(rot + angle))
-					
+
 					arm.fingers[id].draw(ctx, x, y)
 				}
 			}
@@ -210,7 +211,7 @@ fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
 }
 
 fn (finger Finger) draw(ctx gg.Context, x f32, y f32) {
-  // graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
+	// graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
 	for i, point in finger.points {
 		match i {
 			-1 {}
