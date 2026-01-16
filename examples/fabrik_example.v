@@ -47,7 +47,7 @@ fn on_init(mut app App) {
 
 	arm_len := 10
 	app.arm = Arm{
-		pos_constraints:   []f64{len: arm_len, init: 20}
+		pos_constraints:   []f64{len: arm_len, init: 25}
 		angle_constraints: []f64{len: arm_len, init: math.pi * 2 / 6}
 		points:            []vec.Vec2[f64]{len: arm_len, init: vec.Vec2[f64]{
 			x: index + app.win_width / 2
@@ -109,7 +109,7 @@ mut:
 	points []vec.Vec2[f64]
 	// fingers are attached at the first node with a certain angle
 	fingers        []Finger = []Finger{len: 4}
-	fingers_angles []f64    = [-math.pi / 6, -math.pi / 3, math.pi / 3, math.pi / 6]
+	fingers_angles []f64    = [-math.pi / 8, -math.pi / 3, math.pi / 3, math.pi / 8]
 }
 
 const finger_len = 4
@@ -138,7 +138,7 @@ fn (mut arm Arm) update(target vec.Vec2[f64]) {
 
 fn (arm Arm) render(ctx gg.Context) {
 	arm.draw(ctx, gg.white)
-	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
+	// graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
 	for id, angle in arm.fingers_angles {
 		x0 := f32(arm.points[0].x)
 		y0 := f32(arm.points[0].y)
@@ -147,9 +147,9 @@ fn (arm Arm) render(ctx gg.Context) {
 		x := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
 		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
 		
-		arm.fingers[id].draw(ctx, x, y, gg.green)
-		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
-			gg.blue)
+		arm.fingers[id].draw(ctx, x, y, gg.light_blue)
+		// graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
+		// 	gg.blue)
 	}
 }
 
@@ -212,22 +212,15 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 		y := f32(finger.points[i].y) + y_abs
 		match i {
 			0 {
-				x1, y1, x2, y2 := get_opposing_pos(x, y, f32(finger.pos_constraints[i]),
-					rotation)
+			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 
 				xf := x + f32(finger.pos_constraints[i] * cos(rotation))
 				yf := y + f32(finger.pos_constraints[i] * sin(rotation))
 
-				sgl.v2f(x2, y2)
 				sgl.v2f(xf, yf)
-				sgl.v2f(x1, y1)
 			}
 			else {
-				x1, y1, x2, y2 := get_opposing_pos(x, y, f32(finger.pos_constraints[i]),
-					rotation)
-
-				sgl.v2f(x2, y2)
-				sgl.v2f(x1, y1)
+			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 			}
 		}
 	}
