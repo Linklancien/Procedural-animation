@@ -148,6 +148,7 @@ fn (arm Arm) render(ctx gg.Context) {
 
 		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
 			gg.blue)
+		// arm.fingers[id].draw(ctx, x, y, gg.green)
 	}
 }
 
@@ -156,11 +157,11 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 		sgl.load_pipeline(ctx.pipeline.alpha)
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
-	sgl.begin_triangle_strip()
 
+	sgl.begin_triangle_strip()
 	max := arm.points.len - 1
 	for i, point in arm.points {
-		rotation := if i != arm.points.len - 1 {
+		rotation := if i != max {
 			(point - arm.points[i + 1]).angle()
 		} else {
 			(arm.points[i - 1] - point).angle()
@@ -174,12 +175,6 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 
 				sgl.v2f(x1, y1)
 				sgl.v2f(x2, y2)
-				for id, angle in arm.fingers_angles {
-					x0 := x + f32(arm.pos_constraints[i] * cos(rotation + angle))
-					y0 := y + f32(arm.pos_constraints[i] * sin(rotation + angle))
-
-					arm.fingers[id].draw(ctx, x0, y0)
-				}
 			}
 			max {
 				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
@@ -211,10 +206,17 @@ fn get_opposing_pos(x f32, y f32, radius f32, rotation f64) (f32, f32, f32, f32)
 	return x1, y1, x2, y2
 }
 
-fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32) {
+fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 	// graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
-	for i := finger.points.len - 1; i >= 0; i -= 1 {
-		rotation := if i != finger.points.len - 1 {
+	if c.a != 255 {
+		sgl.load_pipeline(ctx.pipeline.alpha)
+	}
+	sgl.c4b(c.r, c.g, c.b, c.a)
+
+	sgl.begin_triangle_strip()
+	max := finger.points.len - 1
+	for i := max; i >= 0; i -= 1 {
+		rotation := if i != max {
 			(finger.points[i] - finger.points[i + 1]).angle()
 		} else {
 			(finger.points[i - 1] - finger.points[i]).angle()
@@ -226,11 +228,12 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32) {
 				x1, y1, x2, y2 := get_opposing_pos(x, y, f32(finger.pos_constraints[i]),
 					rotation)
 
-				sgl.v2f(x2, y2)
-				sgl.v2f(x1, y1)
 				xf := x + f32(finger.pos_constraints[i] * cos(rotation))
 				yf := y + f32(finger.pos_constraints[i] * sin(rotation))
+
+				sgl.v2f(x2, y2)
 				sgl.v2f(xf, yf)
+				sgl.v2f(x1, y1)
 			}
 			else {
 				x1, y1, x2, y2 := get_opposing_pos(x, y, f32(finger.pos_constraints[i]),
@@ -240,5 +243,6 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32) {
 				sgl.v2f(x1, y1)
 			}
 		}
+		sgl.end()
 	}
 }
