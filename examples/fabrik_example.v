@@ -166,7 +166,7 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 				y := f32(point.y)
 
 				rot := (point - arm.points[1]).angle()
-				add_opposing_points(x0, y0, f32(arm.pos_constraints[i]), rot)
+				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rot)
 				for id, angle in arm.fingers_angles {
 					x0 := x + f32(arm.pos_constraints[i] * cos(rot + angle))
 					y0 := y + f32(arm.pos_constraints[i] * sin(rot + angle))
