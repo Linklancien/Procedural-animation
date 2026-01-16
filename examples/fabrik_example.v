@@ -113,17 +113,18 @@ mut:
 }
 
 const finger_len = 4
-const finger_thickness = 5
+const finger_thickness = 10
 const finger_angle = math.pi * 2 / 6
+const array_pos_init := []vec.Vec2[f64]{len: finger_len, init: vec.Vec2[f64]{
+	x: f64(index)
+	y: f64(index)
+}}
 
 struct Finger {
 	pos_constraints   []f64 = []f64{len: finger_len, init: finger_thickness}
 	angle_constraints []f64 = []f64{len: finger_len, init: finger_angle}
 mut:
-	points []vec.Vec2[f64] = []vec.Vec2[f64]{len: finger_len, init: vec.Vec2[f64]{
-	x: index
-	y: index
-}}
+	points []vec.Vec2[f64] = array_pos_init
 }
 
 fn (mut arm Arm) update(target vec.Vec2[f64]) {
@@ -131,18 +132,22 @@ fn (mut arm Arm) update(target vec.Vec2[f64]) {
 		1)
 	for mut finger in arm.fingers {
 		proc_anim.fabrik(mut finger.points, finger.pos_constraints, finger.angle_constraints,
-			target, 1)
+			target-arm.points[0], 1)
 	}
 }
 
 fn (arm Arm) render(ctx gg.Context) {
-	// arm.draw(ctx, gg.white)
+	arm.draw(ctx, gg.white)
 	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
-	for finger in arm.fingers {
-		x := 300
-		y := 300
-		graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints,
-			gg.red)
+	for id, angle in arm.fingers_angles {
+	  x0 := f32(arm.points[0].x)
+		y0 := f32(arm.points[0].y)
+		rot := (arm.points[0] - arm.points[1]).angle()
+		x := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
+		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
+
+		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
+			gg.blue)
 	}
 }
 
@@ -212,18 +217,19 @@ fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
 
 fn (finger Finger) draw(ctx gg.Context, x f32, y f32) {
 	// graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
-	for i, point in finger.points {
+	for i := finger.points.len-1; i > 0; i -= 1 {
 		match i {
 			-1 {}
 			else {
 				rotation := if i != finger.points.len - 1 {
-					(point - finger.points[i + 1]).angle()
+					(finger.points[i] - finger.points[i + 1]).angle()
 				} else {
-					(finger.points[i - 1] - point).angle()
+					(finger.points[i - 1] - finger.points[i]).angle()
 				}
-				x_real := f32(point.x) + x
-				y_real := f32(point.y) + y
-				// println('$x_real, $y_real')
+				x_real := f32(finger.points[i].x) + x
+				y_real := f32(finger.points[i].y) + y
+				println('$x_real, $y_real')
+				// 
 				add_opposing_points(x_real, y_real, f32(finger.pos_constraints[i]), rotation)
 			}
 		}
