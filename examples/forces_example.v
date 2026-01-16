@@ -1,5 +1,5 @@
 import gg
-import linklancien.proc_anim
+import linklancien.procanim
 import linklancien.gg_plot
 import graphic_debug
 import math
