@@ -193,41 +193,35 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 }
 
 fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
-	x1 := x + f32(radius * cos(rotation + math.pi / 2))
-	y1 := y + f32(radius * sin(rotation + math.pi / 2))
-	x2 := x + f32(radius * cos(rotation - math.pi / 2))
-	y2 := y + f32(radius * sin(rotation - math.pi / 2))
+	x1, y1, x2, y2 := get_opposing_pos(x, y, radius, rotation)
 
 	sgl.v2f(x1, y1)
 	sgl.v2f(x2, y2)
 }
 
-fn (finger Finger) draw(ctx gg.Context, x f32, y f32) {
+fn get_opposing_pos(x f32, y f32, radius f32, rotation f64) (f32, f32, f32, f32){
+  x1 := x + f32(radius * cos(rotation + math.pi / 2))
+	y1 := y + f32(radius * sin(rotation + math.pi / 2))
+	x2 := x + f32(radius * cos(rotation - math.pi / 2))
+	y2 := y + f32(radius * sin(rotation - math.pi / 2))
+	return (x1, y1, x2, y2)
+}
+
+fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32) {
 	// graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
 	for i := finger.points.len-1; i > 0; i -= 1 {
+		rotation := if i != finger.points.len - 1 {
+   	(finger.points[i] - finger.points[i + 1]).angle()
+    } else {
+   	(finger.points[i - 1] - finger.points[i]).angle()
+    }
+    x := f32(finger.points[i].x) + x_abs
+    y := f32(finger.points[i].y) + y_abs
 		match i {
 			0 {
-	    rotation := if i != finger.points.len - 1 {
-				(finger.points[i] - finger.points[i + 1]).angle()
-			} else {
-				(finger.points[i - 1] - finger.points[i]).angle()
-			}
-			x_real := f32(finger.points[i].x) + x
-			y_real := f32(finger.points[i].y) + y
-			println('$x_real, $y_real')
-			// 
-			add_opposing_points(x_real, y_real, f32(finger.pos_constraints[i]), rotation)
+			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 			}
 			else {
-				rotation := if i != finger.points.len - 1 {
-					(finger.points[i] - finger.points[i + 1]).angle()
-				} else {
-					(finger.points[i - 1] - finger.points[i]).angle()
-				}
-				x_real := f32(finger.points[i].x) + x
-				y_real := f32(finger.points[i].y) + y
-				println('$x_real, $y_real')
-				// 
 				add_opposing_points(x_real, y_real, f32(finger.pos_constraints[i]), rotation)
 			}
 		}
