@@ -109,15 +109,15 @@ mut:
 	points []vec.Vec2[f64]
 	// fingers are attached at the first node with a certain angle
 	fingers        []Finger = []Finger{len: 4}
-	fingers_angles []f64    = [0.0]
+	fingers_angles []f64    = [-math.pi / 6, -math.pi / 3, math.pi / 3, math.pi / 6]
 }
 
 const finger_len = 4
-const finger_thickness = 10
+const finger_thickness = 5
 const finger_angle = math.pi * 2 / 6
 const array_pos_init = []vec.Vec2[f64]{len: finger_len, init: vec.Vec2[f64]{
-	x: f64(index)
-	y: f64(index)
+	x: f64(finger_len - index - 1)
+	y: f64(finger_len - index - 1)
 }}
 
 struct Finger {
@@ -143,12 +143,13 @@ fn (arm Arm) render(ctx gg.Context) {
 		x0 := f32(arm.points[0].x)
 		y0 := f32(arm.points[0].y)
 		rot := (arm.points[0] - arm.points[1]).angle()
+		
 		x := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
 		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
-
+		
+		arm.fingers[id].draw(ctx, x, y, gg.green)
 		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
 			gg.blue)
-		// arm.fingers[id].draw(ctx, x, y, gg.green)
 	}
 }
 
@@ -191,20 +192,6 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 	sgl.end()
 }
 
-fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
-	x1, y1, x2, y2 := get_opposing_pos(x, y, radius, rotation)
-
-	sgl.v2f(x1, y1)
-	sgl.v2f(x2, y2)
-}
-
-fn get_opposing_pos(x f32, y f32, radius f32, rotation f64) (f32, f32, f32, f32) {
-	x1 := x + f32(radius * cos(rotation + math.pi / 2))
-	y1 := y + f32(radius * sin(rotation + math.pi / 2))
-	x2 := x + f32(radius * cos(rotation - math.pi / 2))
-	y2 := y + f32(radius * sin(rotation - math.pi / 2))
-	return x1, y1, x2, y2
-}
 
 fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 	// graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
@@ -243,6 +230,21 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 				sgl.v2f(x1, y1)
 			}
 		}
-		sgl.end()
 	}
+	sgl.end()
+}
+
+fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
+	x1, y1, x2, y2 := get_opposing_pos(x, y, radius, rotation)
+
+	sgl.v2f(x1, y1)
+	sgl.v2f(x2, y2)
+}
+
+fn get_opposing_pos(x f32, y f32, radius f32, rotation f64) (f32, f32, f32, f32) {
+	x1 := x + f32(radius * cos(rotation + math.pi / 2))
+	y1 := y + f32(radius * sin(rotation + math.pi / 2))
+	x2 := x + f32(radius * cos(rotation - math.pi / 2))
+	y2 := y + f32(radius * sin(rotation - math.pi / 2))
+	return x1, y1, x2, y2
 }
