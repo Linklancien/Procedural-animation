@@ -128,10 +128,10 @@ mut:
 }
 
 fn (mut arm Arm) update(target vec.Vec2[f64]) {
-	proc_anim.fabrik(mut arm.points, arm.pos_constraints, arm.angle_constraints, target,
+	procanim.fabrik(mut arm.points, arm.pos_constraints, arm.angle_constraints, target,
 		1)
 	for mut finger in arm.fingers {
-		proc_anim.fabrik(mut finger.points, finger.pos_constraints, finger.angle_constraints,
+		procanim.fabrik(mut finger.points, finger.pos_constraints, finger.angle_constraints,
 			target - arm.points[0], 1)
 	}
 }
