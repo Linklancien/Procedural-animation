@@ -117,7 +117,7 @@ fn on_frame(mut app App) {
 		}
 		else {
 			if app.move {
-				proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints,
+				procanim.front_go_to(mut app.snake.points, app.snake.pos_constraints,
 					app.snake.angle_constraints, app.target, 1)
 				app.move = false
 			}
@@ -213,8 +213,8 @@ fn (mut snake Snake) update(mut app App) {
 	// apply external forces
 	snake.apply_force(dt, gravity.mul_scalar(snake.node_weight))
 	// apply constrains
-	// proc_anim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
-	proc_anim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
+	// procanim.front_to_back(mut snake.points, snake.pos_constraints, snake.angle_constraints)
+	procanim.front_go_to(mut snake.points, snake.pos_constraints, snake.angle_constraints,
 		snake.points[0], 1)
 	// apply the constrains + the change of position of the head
 	for i in 0 .. snake.velocity.len {
@@ -223,7 +223,7 @@ fn (mut snake Snake) update(mut app App) {
 
 	// move the head if clicked
 	if app.move {
-		proc_anim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
+		procanim.front_go_to(mut app.snake.points, app.snake.pos_constraints, app.snake.angle_constraints,
 			app.target, 1)
 		app.move = false
 	}
