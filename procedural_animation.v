@@ -1,4 +1,4 @@
-module proc_anim
+module procanim
 
 import math
 import math.vec
