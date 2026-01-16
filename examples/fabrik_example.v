@@ -143,10 +143,10 @@ fn (arm Arm) render(ctx gg.Context) {
 		x0 := f32(arm.points[0].x)
 		y0 := f32(arm.points[0].y)
 		rot := (arm.points[0] - arm.points[1]).angle()
-		
+
 		x := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
 		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
-		
+
 		arm.fingers[id].draw(ctx, x, y, gg.light_blue)
 		// graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
 		// 	gg.blue)
@@ -192,7 +192,6 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 	sgl.end()
 }
 
-
 fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 	// graphic_debug.basic_render_at(ctx, x, y, finger.points, finger.pos_constraints, gg.red)
 	if c.a != 255 {
@@ -212,7 +211,7 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 		y := f32(finger.points[i].y) + y_abs
 		match i {
 			0 {
-			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 
 				xf := x + f32(finger.pos_constraints[i] * cos(rotation))
 				yf := y + f32(finger.pos_constraints[i] * sin(rotation))
@@ -220,7 +219,7 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 				sgl.v2f(xf, yf)
 			}
 			else {
-			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 			}
 		}
 	}
