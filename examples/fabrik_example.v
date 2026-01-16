@@ -1,5 +1,5 @@
 import gg
-import linklancien.proc_anim
+import linklancien.procanim
 import graphic_debug
 import math { cos, sin }
 import math.vec
