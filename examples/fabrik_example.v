@@ -234,9 +234,15 @@ fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
 	sgl.v2f(x2, y2)
 }
 
-fn add_points_in_arc(x f32, y f32, radius f32, min_angle f32, max_angle f32, step int) {
-	f := fn [step, min_angle, max_angle] (nth_step int) f32 {
-		return min_angle + (max_angle - min_angle) / step * nth_step
+fn add_points_in_arc(x f32, y f32, radius f32, extreme_angle f32, rota f32, from_the_rota bool, step int) {
+	f := if from_the_rota {
+		fn [step, extreme_angle, rota] (nth_step int) f32 {
+			return rota + (extreme_angle - rota) / step * nth_step
+		}
+	} else {
+		fn [step, extreme_angle, rota] (nth_step int) f32 {
+			return extreme_angle + (rota - angle) / step * nth_step
+		}
 	}
 	for i in 0 .. step {
 		angle := f(i)
