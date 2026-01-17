@@ -171,8 +171,8 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 		y := f32(point.y)
 		match i {
 			0 {
-				add_points_in_arc(x, y, f32(arm.pos_constraints[i]), f32(rotation) - math.pi / 2,
-					f32(rotation) + math.pi / 2, 3)
+				add_points_in_arc(x, y, f32(arm.pos_constraints[i]),  math.pi / 2,
+					f32(rotation), true, 3)
 				x1, y1, x2, y2 := get_opposing_pos(x, y, f32(arm.pos_constraints[i]),
 					rotation)
 
@@ -235,21 +235,25 @@ fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
 }
 
 fn add_points_in_arc(x f32, y f32, radius f32, extreme_angle f32, rota f32, from_the_rota bool, step int) {
-	f := if from_the_rota {
-		fn [step, extreme_angle, rota] (nth_step int) f32 {
-			return rota + (extreme_angle - rota) / step * nth_step
-		}
-	} else {
-		fn [step, extreme_angle, rota] (nth_step int) f32 {
-			return extreme_angle + (rota - angle) / step * nth_step
-		}
+  f := if from_the_rota {
+    fn [step, extreme_angle, rota] (nth_step int) f32 {
+		return  extreme_angle * f32( nth_step / step)
+	} }
+  else{
+    fn [step, extreme_angle, rota] (nth_step int) f32 {
+		return extreme_angle - extreme_angle * f32( nth_step / step)
 	}
+  }
 	for i in 0 .. step {
-		angle := f(i)
-		xf := x + f32(radius * cos(angle))
-		yf := y + f32(radius * sin(angle))
+		angle := f(i) + rota
+		xa := x + f32(radius * cos(angle))
+		ya := y + f32(radius * sin(angle))
 
-		sgl.v2f(xf, yf)
+		sgl.v2f(xa, ya)
+		xo := x + f32(radius * cos(angle))
+		yo := y - f32(radius * sin(angle))
+
+		sgl.v2f(xo, yo)
 	}
 }
 
