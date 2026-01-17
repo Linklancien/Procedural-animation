@@ -147,7 +147,7 @@ fn (arm Arm) render(ctx gg.Context) {
 		x := x0 + f32(arm.pos_constraints[0] * cos(rot + angle))
 		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
 
-		// arm.fingers[id].draw(ctx, x, y, gg.light_blue)
+		arm.fingers[id].draw(ctx, x, y, gg.light_blue)
 		// graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
 		// 	gg.blue)
 	}
@@ -171,20 +171,15 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 		y := f32(point.y)
 		match i {
 			0 {
-				add_points_in_arc(x, y, f32(arm.pos_constraints[i]), f32(rotation) - math.pi / 2,
-					f32(rotation) + math.pi / 2, 3)
-				x1, y1, x2, y2 := get_opposing_pos(x, y, f32(arm.pos_constraints[i]),
-					rotation)
-
-				sgl.v2f(x1, y1)
-				sgl.v2f(x2, y2)
+				add_points_in_arc(x, y, f32(arm.pos_constraints[i]), math.pi / 2, f32(rotation),
+					true, 3)
+				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
 			}
 			max {
 				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
 
-				xf := x + f32(arm.pos_constraints[i] * cos(rotation + math.pi))
-				yf := y + f32(arm.pos_constraints[i] * sin(rotation + math.pi))
-				sgl.v2f(xf, yf)
+				add_points_in_arc(x, y, f32(arm.pos_constraints[i]), math.pi / 2, f32(rotation + math.pi),
+					false, 3)
 			}
 			else {
 				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
@@ -212,15 +207,18 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 		y := f32(finger.points[i].y) + y_abs
 		match i {
 			0 {
-				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
-
-				xf := x + f32(finger.pos_constraints[i] * cos(rotation))
-				yf := y + f32(finger.pos_constraints[i] * sin(rotation))
-
-				sgl.v2f(xf, yf)
+			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				add_points_in_arc(x, y, f32(finger.pos_constraints[i]), math.pi / 2, f32(rotation),
+					true, 2)
+			}
+			max{
+    		add_points_in_arc(x, y, f32(finger.pos_constraints[i]), math.pi / 2, f32(rotation + math.pi),
+        false, 2) 
+   	    add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 			}
 			else {
 				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				
 			}
 		}
 	}
@@ -234,16 +232,26 @@ fn add_opposing_points(x f32, y f32, radius f32, rotation f64) {
 	sgl.v2f(x2, y2)
 }
 
-fn add_points_in_arc(x f32, y f32, radius f32, min_angle f32, max_angle f32, step int) {
-	f := fn [step, min_angle, max_angle] (nth_step int) f32 {
-		return min_angle + (max_angle - min_angle) / step * nth_step
+fn add_points_in_arc(x f32, y f32, radius f32, extreme_angle f32, rota f32, from_the_rota bool, step int) {
+	f := if from_the_rota {
+		fn [step, extreme_angle, rota] (nth_step int) f32 {
+			return extreme_angle * f32(nth_step) / f32(step)
+		}
+	} else {
+		fn [step, extreme_angle, rota] (nth_step int) f32 {
+			return extreme_angle - extreme_angle * f32(nth_step) / f32(step)
+		}
 	}
-	for i in 0 .. step {
+	for i in 0 .. (step+1) {
 		angle := f(i)
-		xf := x + f32(radius * cos(angle))
-		yf := y + f32(radius * sin(angle))
+		xa := x + f32(radius * cos(rota + angle))
+		ya := y + f32(radius * sin(rota + angle))
 
-		sgl.v2f(xf, yf)
+		sgl.v2f(xa, ya)
+		xo := x + f32(radius * cos(rota - angle))
+		yo := y + f32(radius * sin(rota - angle))
+
+		sgl.v2f(xo, yo)
 	}
 }
 
