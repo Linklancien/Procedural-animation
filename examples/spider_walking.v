@@ -131,8 +131,8 @@ fn (chain Chain) render(ctx gg.Context, pos vec.Vec2[f64]) {
 
 // Spider
 struct Spider {
-	legs []Leg
 mut:
+	legs []Leg
 	chain Chain
 }
 
@@ -149,6 +149,9 @@ fn Spider.create() Spider {
 
 fn (mut spider Spider) update(target vec.Vec2[f64]) {
 	spider.chain.update(target, .goto)
+	for mut leg in mut spider.legs{
+	  leg.chain.update(target - spider.chain.points[leg.id_body_part], .fabrik)
+	}
 }
 
 fn (spider Spider) render(ctx gg.Context) {
@@ -160,8 +163,9 @@ fn (spider Spider) render(ctx gg.Context) {
 
 // Leg
 struct Leg {
-	chain        Chain
+mut:
 	id_body_part int
+	chain        Chain
 }
 
 fn Leg.create(id int) Leg {
