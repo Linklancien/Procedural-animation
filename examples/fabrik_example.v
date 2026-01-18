@@ -6,6 +6,7 @@ import math.vec
 import sokol.sgl
 
 const bg_color = gg.Color{}
+const debug = false
 
 struct App {
 mut:
@@ -60,7 +61,7 @@ fn on_frame(mut app App) {
 	app.arm.update(app.target)
 	// Draw
 	app.ctx.begin()
-	app.arm.render(app.ctx)
+	app.arm.render(app.ctx, debug)
 	app.ctx.end()
 }
 
@@ -136,9 +137,11 @@ fn (mut arm Arm) update(target vec.Vec2[f64]) {
 	}
 }
 
-fn (arm Arm) render(ctx gg.Context) {
+fn (arm Arm) render(ctx gg.Context, debug bool) {
 	arm.draw(ctx, gg.white)
-	graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
+	if debug{
+	  graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
+	}
 	for id, angle in arm.fingers_angles {
 		x0 := f32(arm.points[0].x)
 		y0 := f32(arm.points[0].y)
@@ -148,8 +151,10 @@ fn (arm Arm) render(ctx gg.Context) {
 		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
 
 		arm.fingers[id].draw(ctx, x, y, gg.light_blue)
-		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
-			gg.blue)
+		if debug{
+  		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
+  			gg.blue)
+		}
 	}
 }
 
