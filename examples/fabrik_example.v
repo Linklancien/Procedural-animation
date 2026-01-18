@@ -200,11 +200,13 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 	sgl.begin_triangle_strip()
 	max := finger.points.len - 1
 	for i := max; i >= 0; i -= 1 {
-		rotation := if i != max {
-			(finger.points[i] - finger.points[i + 1]).angle()
-		} else {
-			(finger.points[i - 1] - finger.points[i]).angle()
-		}
+	rotation := if i == 0 {
+		(finger.points[i] - finger.points[i + 1]).angle()
+	} else if i == max {
+		(finger.points[i - 1] - finger.points[i]).angle()
+	} else {
+		(finger.points[i + 1] - finger.points[i - 1]).angle()
+	}
 		x := f32(finger.points[i].x) + x_abs
 		y := f32(finger.points[i].y) + y_abs
 		match i {
