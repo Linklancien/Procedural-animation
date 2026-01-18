@@ -6,6 +6,7 @@ import math.vec
 import sokol.sgl
 
 const bg_color = gg.Color{}
+const debug = false
 
 struct App {
 mut:
@@ -60,7 +61,7 @@ fn on_frame(mut app App) {
 	app.arm.update(app.target)
 	// Draw
 	app.ctx.begin()
-	app.arm.render(app.ctx)
+	app.arm.render(app.ctx, debug)
 	app.ctx.end()
 }
 
@@ -136,9 +137,11 @@ fn (mut arm Arm) update(target vec.Vec2[f64]) {
 	}
 }
 
-fn (arm Arm) render(ctx gg.Context) {
+fn (arm Arm) render(ctx gg.Context, debug bool) {
 	arm.draw(ctx, gg.white)
-	// graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
+	if debug{
+	  graphic_debug.basic_render(ctx, arm.points, arm.pos_constraints, gg.red)
+	}
 	for id, angle in arm.fingers_angles {
 		x0 := f32(arm.points[0].x)
 		y0 := f32(arm.points[0].y)
@@ -148,8 +151,10 @@ fn (arm Arm) render(ctx gg.Context) {
 		y := y0 + f32(arm.pos_constraints[0] * sin(rot + angle))
 
 		arm.fingers[id].draw(ctx, x, y, gg.light_blue)
-		// graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
-		// 	gg.blue)
+		if debug{
+  		graphic_debug.basic_render_at(ctx, x, y, arm.fingers[id].points, arm.fingers[id].pos_constraints,
+  			gg.blue)
+		}
 	}
 }
 
@@ -162,10 +167,12 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 	sgl.begin_triangle_strip()
 	max := arm.points.len - 1
 	for i, point in arm.points {
-		rotation := if i != max {
+		rotation := if i == 0 {
 			(point - arm.points[i + 1]).angle()
-		} else {
+		} else if i == max {
 			(arm.points[i - 1] - point).angle()
+		} else {
+			(arm.points[i - 1] - arm.points[i + 1]).angle()
 		}
 		x := f32(point.x)
 		y := f32(point.y)
@@ -178,8 +185,8 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 			max {
 				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
 
-				add_points_in_arc(x, y, f32(arm.pos_constraints[i]), math.pi / 2, f32(rotation + math.pi),
-					false, 3)
+				add_points_in_arc(x, y, f32(arm.pos_constraints[i]), math.pi / 2, f32(rotation +
+					math.pi), false, 3)
 			}
 			else {
 				add_opposing_points(x, y, f32(arm.pos_constraints[i]), rotation)
@@ -198,23 +205,25 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 	sgl.begin_triangle_strip()
 	max := finger.points.len - 1
 	for i := max; i >= 0; i -= 1 {
-		rotation := if i != max {
-			(finger.points[i] - finger.points[i + 1]).angle()
-		} else {
-			(finger.points[i - 1] - finger.points[i]).angle()
-		}
+	rotation := if i == 0 {
+		(finger.points[i] - finger.points[i + 1]).angle()
+	} else if i == max {
+		(finger.points[i - 1] - finger.points[i]).angle()
+	} else {
+		(finger.points[i - 1] - finger.points[i + 1]).angle()
+	}
 		x := f32(finger.points[i].x) + x_abs
 		y := f32(finger.points[i].y) + y_abs
 		match i {
 			0 {
-			  add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 				add_points_in_arc(x, y, f32(finger.pos_constraints[i]), math.pi / 2, f32(rotation),
 					true, 2)
 			}
-			max{
-    		add_points_in_arc(x, y, f32(finger.pos_constraints[i]), math.pi / 2, f32(rotation + math.pi),
-        false, 2) 
-   	    add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+			max {
+				add_points_in_arc(x, y, f32(finger.pos_constraints[i]), math.pi / 2, f32(rotation +
+					math.pi), false, 2)
+				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
 			}
 			else {
 				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
@@ -242,7 +251,7 @@ fn add_points_in_arc(x f32, y f32, radius f32, extreme_angle f32, rota f32, from
 			return extreme_angle - extreme_angle * f32(nth_step) / f32(step)
 		}
 	}
-	for i in 0 .. (step+1) {
+	for i in 0 .. (step + 1) {
 		angle := f(i)
 		xa := x + f32(radius * cos(rota + angle))
 		ya := y + f32(radius * sin(rota + angle))
