@@ -52,7 +52,7 @@ fn on_frame(mut app App) {
 	app.spider.update(app.target)
 	// Draw
 	app.ctx.begin()
-	app.spider.render(app.ctx, render_debug)
+	app.spider.render(app.ctx)
 	app.ctx.end()
 }
 
@@ -84,14 +84,16 @@ fn on_event(e &gg.Event, mut app App) {
 
 // Chain
 struct Chain {
+  color gg.Color
 	pos_constraints   []f64
 	angle_constraints []f64
 mut:
 	points []vec.Vec2[f64]
 }
 
-fn Chain.create_fixed(len int, pos_constraint f64, angle_constraint f64) Chain {
+fn Chain.create_fixed(color gg.Color, len int, pos_constraint f64, angle_constraint f64) Chain {
 	return Chain{
+	  color: color
 		pos_constraints:   []f64{len: len, init: pos_constraint}
 		angle_constraints: []f64{len: len, init: angle_constraint}
 		points:            []vec.Vec2[f64]{len: len, init: vec.Vec2[f64]{
@@ -118,10 +120,12 @@ fn (mut chain Chain) update(target vec.Vec2[f64], update Updates_type) {
 	}
 }
 
-fn (chain Chain) render(ctx gg.Context, render_debug bool) {
-	graphic_debug.filled_render(ctx, chain.points, chain.pos_constraints, gg.white)
+fn (chain Chain) render(ctx gg.Context, pos vec.Vec2[f64]) {
+  x := f32(pos.x)
+  y := f32(pos.y)
+	graphic_debug.filled_render_at(ctx, x, y, chain.points, chain.pos_constraints, chain.color)
 	if render_debug {
-		graphic_debug.basic_render(ctx, chain.points, chain.pos_constraints, gg.red)
+		graphic_debug.basic_render_at(ctx, x, y, chain.points, chain.pos_constraints, gg.red)
 	}
 }
 
@@ -139,7 +143,7 @@ fn Spider.create() Spider {
 	ids := [1, 1, 4, 4]
 	return Spider{
 		legs:  []Leg{len: 4, init: Leg.create(ids[index])}
-		chain: Chain.create_fixed(len, pos_constraint, angle_constraint)
+		chain: Chain.create_fixed(gg.gray, len, pos_constraint, angle_constraint)
 	}
 }
 
@@ -147,10 +151,10 @@ fn (mut spider Spider) update(target vec.Vec2[f64]) {
 	spider.chain.update(target, .goto)
 }
 
-fn (spider Spider) render(ctx gg.Context, render_debug bool) {
-	spider.chain.render(ctx, render_debug)
+fn (spider Spider) render(ctx gg.Context) {
+  spider.chain.render(ctx, vec.Vec2[f64]{})
 	for leg in spider.legs {
-		leg.render(ctx, render_debug, spider.chain.points[leg.id_body_part])
+		leg.render(ctx, spider.chain.points[leg.id_body_part])
 	}
 }
 
@@ -165,11 +169,11 @@ fn Leg.create(id int) Leg {
 	pos_constraint := 10.0
 	angle_constraint := math.pi * 2 / 6
 	return Leg{
-		chain:        Chain.create_fixed(len, pos_constraint, angle_constraint)
+		chain:        Chain.create_fixed(gg.gray, len, pos_constraint, angle_constraint)
 		id_body_part: id
 	}
 }
 
-fn (leg Leg) render(ctx gg.Context, render_debug bool, pos vec.Vec2[f64]) {
-	leg.chain.render(ctx, render_debug)
+fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
+	leg.chain.render(ctx, pos)
 }

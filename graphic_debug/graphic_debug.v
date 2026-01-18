@@ -40,10 +40,10 @@ pub fn angular_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, colo
 
 // Complex_render
 pub fn filled_render(ctx gg.Context, points []vec.Vec2[f64], radius []f64, c gg.Color) {
-  filled_render_abs(ctx, 0.0, 0.0, points, radius, c)
+  filled_render_at(ctx, 0.0, 0.0, points, radius, c)
 }
   
-pub fn filled_render_abs(ctx gg.Context, x_abs f32, y_abs f32, points []vec.Vec2[f64], radius []f64, c gg.Color) {
+pub fn filled_render_at(ctx gg.Context, x_abs f32, y_abs f32, points []vec.Vec2[f64], radius []f64, c gg.Color) {
 	if c.a != 255 {
 		sgl.load_pipeline(ctx.pipeline.alpha)
 	}
