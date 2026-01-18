@@ -227,6 +227,7 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 			}
 			else {
 				add_opposing_points(x, y, f32(finger.pos_constraints[i]), rotation)
+				
 			}
 		}
 	}
