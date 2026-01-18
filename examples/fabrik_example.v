@@ -167,7 +167,7 @@ fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
 		} else if i == max {
 			(arm.points[i - 1] - point).angle()
 		} else {
-			(arm.points[i + 1] - arm.points[i - 1]).angle()
+			(arm.points[i - 1] - arm.points[i + 1]).angle()
 		}
 		x := f32(point.x)
 		y := f32(point.y)
@@ -205,7 +205,7 @@ fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
 	} else if i == max {
 		(finger.points[i - 1] - finger.points[i]).angle()
 	} else {
-		(finger.points[i + 1] - finger.points[i - 1]).angle()
+		(finger.points[i - 1] - finger.points[i + 1]).angle()
 	}
 		x := f32(finger.points[i].x) + x_abs
 		y := f32(finger.points[i].y) + y_abs
