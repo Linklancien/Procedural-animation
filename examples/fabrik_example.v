@@ -144,7 +144,7 @@ fn (arm Arm) render(ctx gg.Context, debug bool) {
 }
 
 fn (arm Arm) draw(ctx gg.Context, c gg.Color) {
-  graphic_debug.filled_render(ctx, arm.points, arm.pos_constraints, c)
+	graphic_debug.filled_render(ctx, arm.points, arm.pos_constraints, c)
 }
 
 const finger_len = 4
@@ -163,5 +163,6 @@ mut:
 }
 
 fn (finger Finger) draw(ctx gg.Context, x_abs f32, y_abs f32, c gg.Color) {
-	graphic_debug.filled_render_at(ctx, x_abs, y_abs, finger.points, finger.pos_constraints, c)
+	graphic_debug.filled_render_at(ctx, x_abs, y_abs, finger.points, finger.pos_constraints,
+		c)
 }
