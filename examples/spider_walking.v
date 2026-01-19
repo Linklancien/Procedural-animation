@@ -154,25 +154,26 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 	spider.chain.update(head_target, .goto)
 	ofset := [10, -10, 10, -10]
 	for i, mut leg in mut spider.legs {
-		if target := get_target(spider.chain.points[leg.id_body_part].x + leg.chain.points[0].x +
-			ofset[i], 50)
-		{
+		check_at := spider.chain.points[leg.id_body_part].x + leg.chain.points[0].x + ofset[i]
+		if target := get_target(check_at, 50, calc_surface) {
 			leg.chain.update(target - spider.chain.points[leg.id_body_part], .fabrik)
 		}
 	}
 }
 
-fn get_target(x f64, radius f64) !vec.Vec2[f64] {
+fn get_target(x f64, radius f64, f fn (f64) f64) !vec.Vec2[f64] {
 	rsquared := radius * radius
-	for r in -100 .. 101 {
+	for r in -int(radius) .. int(radius) + 1 {
 		value := f(x + r)
-		if value * value + (x + r) * (x + r) - rsquared == 0 {
+		println(value - math.sqrt((x + r) * (x + r) - rsquared))
+		if value - math.sqrt((x + r) * (x + r) - rsquared) == 0 {
 			return vec.Vec2[f64]{
 				x: x + r
 				y: value
 			}
 		}
 	}
+	return error('No y find')
 }
 
 fn calc_surface(x f64) f64 {
