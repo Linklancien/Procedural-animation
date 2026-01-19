@@ -1,6 +1,7 @@
 import gg
-import linklancien.procanim
+import sokol.sgl
 import graphic_debug
+import linklancien.procanim
 import math
 import math.vec
 
@@ -53,6 +54,7 @@ fn on_frame(mut app App) {
 	// Draw
 	app.ctx.begin()
 	app.spider.render(app.ctx)
+	line_render(app.ctx)
 	app.ctx.end()
 }
 
@@ -147,11 +149,39 @@ fn Spider.create() Spider {
 	}
 }
 
-fn (mut spider Spider) update(target vec.Vec2[f64]) {
-	spider.chain.update(target, .goto)
-	for mut leg in mut spider.legs{
+fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
+	spider.chain.update(head_target, .goto)
+	ofset := [10, -10, 10, -10]
+	for i, mut leg in mut spider.legs{
+	  target := get_target(spider.chain.points[leg.id_body_part].x + leg.chain.points[0].x + ofset[i], 50)
 	  leg.chain.update(target - spider.chain.points[leg.id_body_part], .fabrik)
 	}
+}
+
+fn get_target(x f64, radius f64) vec.Vec2[f64]{
+  y := calc_surface(x)
+  return vec.Vec2[f64]{
+    x: x
+    y: y
+  }
+}
+
+fn calc_surface(x f64) f64{
+  return 15*math.sin(x/30) + 200
+}
+
+fn line_render(ctx gg.Context){
+  c := gg.white
+  if c.a != 255 {
+		sgl.load_pipeline(ctx.pipeline.alpha)
+	}
+	sgl.c4b(c.r, c.g, c.b, c.a)
+	sgl.begin_line_strip()
+ 
+	for x in 0 .. 1092 {
+	  sgl.v2f(x, f32(calc_surface(x)))
+	}
+	sgl.end()
 }
 
 fn (spider Spider) render(ctx gg.Context) {
