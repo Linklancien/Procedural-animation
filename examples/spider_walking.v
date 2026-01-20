@@ -153,26 +153,31 @@ fn Spider.create() Spider {
 fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 	spider.chain.update(head_target, .goto)
 	ofset := [10, -10, 0, 0]
+	turn := [true, false, true, false]
 	for i, mut leg in mut spider.legs {
-	  radius := 50
-		check_at := spider.chain.points[leg.id_body_part].x + leg.chain.points[0].x + ofset[i]
-		if target := get_target(check_at, radius, calc_surface) {
-	    if (leg.chain.points[leg.chain.points.len - 1] - target).magnitude() >= radius{
-  			leg.chain.update(target - spider.chain.points[leg.id_body_part], .fabrik)
-  		}
+		radius := 10
+		check_at_x := spider.chain.points[leg.id_body_part].x + leg.chain.points[0].x
+		check_at_y := spider.chain.points[leg.id_body_part].y + leg.chain.points[0].y
+		if target := get_target(check_at_x, check_at_y, radius, turn[i], calc_surface) {
+			leg.chain.update(target - spider.chain.points[leg.id_body_part], .fabrik)
 		}
 	}
 }
 
-fn get_target(x f64, radius f64, f fn (f64) f64) !vec.Vec2[f64] {
-		value := f(x)
-		
-	return vec.Vec2[f64]{
-		x: x 
-		y: value
+fn get_target(x f64, y f64, radius f64, reversed bool, f fn (f64) f64) !vec.Vec2[f64] {
+	rsquared := radius * radius
+	for r_f in -int(radius) .. int(radius) + 1 {
+		r := if reversed { -r_f } else { r_f }
+		value := f(x + r) - y
+		// need to be cautious of which base it is
+		if value * value + r * r <= rsquared {
+			return vec.Vec2[f64]{
+				x: x + r
+				y: f(x + r)
+			}
+		}
 	}
-			
-	// return error('No y find')
+	return error('No y find')
 }
 
 fn calc_surface(x f64) f64 {
