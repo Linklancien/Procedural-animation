@@ -151,16 +151,27 @@ fn Spider.create() Spider {
 }
 
 fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
+	// iniitialise the update:
+	for mut leg in mut spider.legs {
+	  // get the new target relatively to the leg base
+		leg.current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
+	}
+	// start moving things
 	spider.chain.update(head_target, .goto)
-	ofset := [10, -10, 0, 0]
+	// ofset := [10, -10, 0, 0]
 	turn := [true, false, true, false]
 	for i, mut leg in mut spider.legs {
 		radius := 10
-		check_at_x := spider.chain.points[leg.id_body_part].x + leg.chain.points[0].x
-		check_at_y := spider.chain.points[leg.id_body_part].y + leg.chain.points[0].y
-		if target := get_target(check_at_x, check_at_y, radius, turn[i], calc_surface) {
-			leg.chain.update(target - spider.chain.points[leg.id_body_part], .fabrik)
+		leg.absolute_target = leg.current_target + spider.chain.points[leg.id_body_part]
+		if (leg.current_target).magnitude() > radius {
+			println('passed')
+			check_at := spider.chain.points[leg.id_body_part] + leg.chain.points[0]
+			if target := get_target(check_at.x, check_at.y, radius, turn[i], calc_surface) {
+				leg.absolute_target = target
+			}
+			leg.current_target -= spider.chain.points[leg.id_body_part]
 		}
+		leg.chain.update(leg.current_target, .fabrik)
 	}
 }
 
@@ -208,8 +219,12 @@ fn (spider Spider) render(ctx gg.Context) {
 // Leg
 struct Leg {
 mut:
-	id_body_part int
-	chain        Chain
+	id_body_part    int
+	chain           Chain
+	absolute_target vec.Vec2[f64]
+	// relative to the absolute position
+	current_target vec.Vec2[f64]
+	// in local position
 }
 
 fn Leg.create(id int) Leg {
