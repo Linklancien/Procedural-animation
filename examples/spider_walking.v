@@ -162,16 +162,16 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 	// ofset := [10, -10, 0, 0]
 	turn := [true, false, true, false]
 	for i, mut leg in mut spider.legs {
-		leg.current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
-		if leg.current_target.magnitude() > leg.radius {
+		mut current_target := leg.absolute_target - spider.chain.points[leg.id_body_part]
+		if current_target.magnitude() > leg.radius {
 			check_at := spider.chain.points[leg.id_body_part]
 			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], calc_surface) {
 				leg.absolute_target = target
 			}
 			// get the new target relatively to the leg base
-			leg.current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
+			current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
 		}
-		leg.chain.update(leg.current_target, .fabrik)
+		leg.chain.update(current_target, .fabrik)
 	}
 }
 
@@ -224,8 +224,6 @@ mut:
 	chain           Chain
 	absolute_target vec.Vec2[f64]
 	// relative to the absolute position
-	current_target vec.Vec2[f64]
-	// in local position
 }
 
 fn Leg.create(id int, color gg.Color) Leg {
