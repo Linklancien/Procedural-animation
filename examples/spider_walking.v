@@ -15,8 +15,8 @@ mut:
 
 	x_mouse    int
 	y_mouse    int
-	win_width  int
-	win_height int
+	win_width  int = 1000
+	win_height int = 700
 
 	target vec.Vec2[f64]
 
@@ -165,7 +165,7 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 		mut current_target := leg.absolute_target - spider.chain.points[leg.id_body_part]
 		if current_target.magnitude() > leg.radius {
 			check_at := spider.chain.points[leg.id_body_part]
-			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], calc_surface) {
+			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], [calc_surface_line, calc_surface_sin, calc_surface_sin2]) {
 				leg.absolute_target = target
 			}
 			// get the new target relatively to the leg base
@@ -175,24 +175,34 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 	}
 }
 
-fn get_target(x f64, y f64, radius f64, reversed bool, f fn (f64) f64) !vec.Vec2[f64] {
+fn get_target(x f64, y f64, radius f64, reversed bool, fs []fn (f64) f64) !vec.Vec2[f64] {
 	rsquared := radius * radius
 	for r_f in -int(radius) .. int(radius) + 1 {
 		r := if reversed { -r_f } else { r_f }
-		value := f(x + r) - y
-		// need to be cautious of which base it is
-		if value * value + r * r <= rsquared {
-			return vec.Vec2[f64]{
-				x: x + r
-				y: f(x + r)
-			}
+		for f in fs{
+  		value := f(x + r) - y
+  		// need to be cautious of which base it is
+  		if value * value + r * r <= rsquared {
+  			return vec.Vec2[f64]{
+  				x: x + r
+  				y: f(x + r)
+  			}
+  		}
 		}
 	}
 	return error('No y find')
 }
 
-fn calc_surface(x f64) f64 {
-	return 15 * math.sin(x / 30) + 200
+fn calc_surface_line(x f64) f64 {
+	return 200
+}
+
+fn calc_surface_sin(x f64) f64 {
+	return 5 * math.sin(x / 30) + 400
+}
+
+fn calc_surface_sin2(x f64) f64 {
+	return 10 * math.sin(x / 30) + 600
 }
 
 fn line_render(ctx gg.Context) {
@@ -201,10 +211,22 @@ fn line_render(ctx gg.Context) {
 		sgl.load_pipeline(ctx.pipeline.alpha)
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
+	len := 1000
 	sgl.begin_line_strip()
-
-	for x in 0 .. 1092 {
-		sgl.v2f(x, f32(calc_surface(x)))
+	for x in 0 .. len {
+		sgl.v2f(x, f32(calc_surface_line(x)))
+	}
+	sgl.end()
+	
+	sgl.begin_line_strip()
+	for x in 0 .. len {
+		sgl.v2f(x, f32(calc_surface_sin(x)))
+	}
+	sgl.end()
+	
+	sgl.begin_line_strip()
+	for x in 0 .. len {
+		sgl.v2f(x, f32(calc_surface_sin2(x)))
 	}
 	sgl.end()
 }
