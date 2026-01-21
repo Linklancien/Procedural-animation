@@ -152,15 +152,11 @@ fn Spider.create() Spider {
 }
 
 fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
-	// // iniitialise the update:
-	// for mut leg in mut spider.legs {
-	//   // get the new target relatively to the leg base
-	// 	leg.current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
-	// }
 	// start moving things
 	spider.chain.update(head_target, .goto)
-	// ofset := [10, -10, 0, 0]
 	turn := [true, false, true, false]
+	
+	// the code inside the loop may be placed elsewhere
 	for i, mut leg in mut spider.legs {
 		mut current_target := leg.absolute_target - spider.chain.points[leg.id_body_part]
 		if current_target.magnitude() > leg.radius {
@@ -174,6 +170,40 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 		leg.chain.update(current_target, .fabrik)
 	}
 }
+
+fn (spider Spider) render(ctx gg.Context) {
+	spider.chain.render(ctx, vec.Vec2[f64]{})
+	for leg in spider.legs {
+		leg.render(ctx, spider.chain.points[leg.id_body_part])
+	}
+}
+
+// Leg
+struct Leg {
+	radius f64
+mut:
+	id_body_part    int
+	chain           Chain
+	absolute_target vec.Vec2[f64]
+	// relative to the absolute position
+}
+
+fn Leg.create(id int, color gg.Color) Leg {
+	len := 5
+	pos_constraint := 10.0
+	angle_constraint := math.pi * 2 / 6
+	return Leg{
+		chain:        Chain.create_fixed(color, len, pos_constraint, angle_constraint)
+		id_body_part: id
+		radius:       len * pos_constraint
+	}
+}
+
+fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
+	leg.chain.render(ctx, pos)
+}
+
+// Surfaces
 
 fn get_target(x f64, y f64, radius f64, reversed bool, fs []fn (f64) f64) !vec.Vec2[f64] {
 	rsquared := radius * radius
@@ -229,36 +259,4 @@ fn line_render(ctx gg.Context) {
 		sgl.v2f(x, f32(calc_surface_sin2(x)))
 	}
 	sgl.end()
-}
-
-fn (spider Spider) render(ctx gg.Context) {
-	spider.chain.render(ctx, vec.Vec2[f64]{})
-	for leg in spider.legs {
-		leg.render(ctx, spider.chain.points[leg.id_body_part])
-	}
-}
-
-// Leg
-struct Leg {
-	radius f64
-mut:
-	id_body_part    int
-	chain           Chain
-	absolute_target vec.Vec2[f64]
-	// relative to the absolute position
-}
-
-fn Leg.create(id int, color gg.Color) Leg {
-	len := 5
-	pos_constraint := 10.0
-	angle_constraint := math.pi * 2 / 6
-	return Leg{
-		chain:        Chain.create_fixed(color, len, pos_constraint, angle_constraint)
-		id_body_part: id
-		radius:       len * pos_constraint
-	}
-}
-
-fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
-	leg.chain.render(ctx, pos)
 }
