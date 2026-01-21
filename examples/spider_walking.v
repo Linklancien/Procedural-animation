@@ -6,7 +6,7 @@ import math
 import math.vec
 
 const bg_color = gg.Color{}
-const render_debug = true
+const render_debug = false
 
 struct App {
 mut:
@@ -144,8 +144,9 @@ fn Spider.create() Spider {
 	pos_constraint := 20.0
 	angle_constraint := math.pi * 2 / 6
 	ids := [1, 1, 4, 4]
+	colors := [gg.red, gg.blue, gg.green, gg.purple]
 	return Spider{
-		legs:  []Leg{len: 4, init: Leg.create(ids[index])}
+		legs:  []Leg{len: 4, init: Leg.create(ids[index], colors[index])}
 		chain: Chain.create_fixed(gg.gray, len, pos_constraint, angle_constraint)
 	}
 }
@@ -161,11 +162,10 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 	// ofset := [10, -10, 0, 0]
 	turn := [true, false, true, false]
 	for i, mut leg in mut spider.legs {
-		radius := 50
 		leg.current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
-		if leg.current_target.magnitude() > radius {
+		if leg.current_target.magnitude() > leg.radius {
 			check_at := spider.chain.points[leg.id_body_part]
-			if target := get_target(check_at.x, check_at.y, radius, turn[i], calc_surface) {
+			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], calc_surface) {
 				leg.absolute_target = target
 			}
 			// get the new target relatively to the leg base
@@ -218,6 +218,7 @@ fn (spider Spider) render(ctx gg.Context) {
 
 // Leg
 struct Leg {
+	radius f64
 mut:
 	id_body_part    int
 	chain           Chain
@@ -227,13 +228,14 @@ mut:
 	// in local position
 }
 
-fn Leg.create(id int) Leg {
+fn Leg.create(id int, color gg.Color) Leg {
 	len := 5
 	pos_constraint := 10.0
 	angle_constraint := math.pi * 2 / 6
 	return Leg{
-		chain:        Chain.create_fixed(gg.gray, len, pos_constraint, angle_constraint)
+		chain:        Chain.create_fixed(color, len, pos_constraint, angle_constraint)
 		id_body_part: id
+		radius:       len * pos_constraint
 	}
 }
 
