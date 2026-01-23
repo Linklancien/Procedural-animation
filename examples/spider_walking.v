@@ -11,10 +11,7 @@ const render_debug = false
 struct App {
 mut:
 	ctx      &gg.Context = unsafe { nil }
-	text_cfg gg.TextCfg
 
-	x_mouse    int
-	y_mouse    int
 	win_width  int = 1000
 	win_height int = 700
 
@@ -50,11 +47,12 @@ fn on_init(mut app App) {
 }
 
 fn on_frame(mut app App) {
+  // update
 	app.spider.update(app.target)
-	// Draw
+	// draw
 	app.ctx.begin()
 	app.spider.render(app.ctx)
-	line_render(app.ctx)
+	line_render(app.ctx, app.win_width)
 	app.ctx.end()
 }
 
@@ -63,13 +61,9 @@ fn on_event(e &gg.Event, mut app App) {
 	app.win_width = size.width
 	app.win_height = size.height
 
-	app.x_mouse, app.y_mouse = int(e.mouse_x), int(e.mouse_y)
 	app.target = vec.Vec2[f64]{
-		x: app.x_mouse
-		y: app.y_mouse
-	}
-	if e.char_code != 0 && e.char_code < 128 {
-		// app.change += u8(e.char_code).ascii_str()
+		x: int(e.mouse_x)
+		y: int(e.mouse_y)
 	}
 	match e.typ {
 		.key_down {
@@ -83,7 +77,7 @@ fn on_event(e &gg.Event, mut app App) {
 		else {}
 	}
 }
-
+// ##############################################################################################################
 // Chain
 struct Chain {
 	color             gg.Color
@@ -98,6 +92,7 @@ fn Chain.create_fixed(color gg.Color, len int, pos_constraint f64, angle_constra
 		color:             color
 		pos_constraints:   []f64{len: len, init: pos_constraint}
 		angle_constraints: []f64{len: len, init: angle_constraint}
+		// points must be initialised with a little offset
 		points:            []vec.Vec2[f64]{len: len, init: vec.Vec2[f64]{
 			x: 1
 		}.mul_scalar(len - index)}
@@ -134,26 +129,26 @@ fn (chain Chain) render(ctx gg.Context, pos vec.Vec2[f64]) {
 
 // Spider
 struct Spider {
-mut:
   linked_legs [][]int
+mut:
 	legs  []Leg
 	chain Chain
 }
 
 fn Spider.create() Spider {
-	spider_len := 5
+	spider_len := 6
 	pos_constraint := 20.0
 	angle_constraint := math.pi * 2 / 6
-	colors := [gg.red, gg.blue, gg.green, gg.purple]
 	// legs
-	nb_leg := 4
+	leg_colors := [gg.red, gg.blue, gg.dark_blue, gg.dark_red]//, gg.light_red, gg.light_blue]
+	nb_leg := leg_colors.len
 	mut linked_legs := [][]int{len: spider_len}
 	for i in 0..nb_leg{
 	  linked_legs[create_ids(i)] << i
 	}
 	return Spider{
 	  linked_legs: linked_legs
-		legs:  []Leg{len: nb_leg, init: Leg.create(create_ids(index), colors[index])}
+		legs:  []Leg{len: nb_leg, init: Leg.create(create_ids(index), leg_colors[index])}
 		chain: Chain.create_fixed(gg.gray, spider_len, pos_constraint, angle_constraint)
 	}
 }
@@ -164,7 +159,10 @@ fn create_ids(index int) int{
       return 1
     }
     2, 3{
-      return 4
+      return 5
+    }
+    4, 5{
+      return 3
     }
     else{
       panic('case not handle')
@@ -206,11 +204,10 @@ mut:
 	id_body_part    int
 	chain           Chain
 	absolute_target vec.Vec2[f64]
-	// relative to the absolute position
 }
 
 fn Leg.create(id int, color gg.Color) Leg {
-	len := 5
+	len := 6
 	pos_constraint := 10.0
 	angle_constraint := math.pi * 2 / 6
 	return Leg{
@@ -224,7 +221,7 @@ fn (mut leg Leg) new_target(abs_pos vec.Vec2[f64], forced bool){
   mut current_target := leg.absolute_target - abs_pos
 	if current_target.magnitude() > leg.radius || forced{
 		leg.absolute_target = get_target(abs_pos.x, abs_pos.y, leg.absolute_target.x, leg.absolute_target.y,
-			leg.radius, [calc_surface_line, calc_surface_sin, calc_surface_sin2])
+			leg.radius, [calc_surface_line, calc_surface_sin, calc_surface_two_sins])
 		// get the new target relatively to the leg base
 		current_target = leg.absolute_target - abs_pos
 	}
@@ -236,7 +233,7 @@ fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
 }
 
 // Surfaces
-
+// get_target get the further target inside a radius around a point
 fn get_target(x f64, y f64, target_x f64, target_y f64, radius f64, fs []fn (f64) f64) vec.Vec2[f64] {
 	rsquared := radius * radius
 	mut sav_x := target_x
@@ -276,17 +273,16 @@ fn calc_surface_sin(x f64) f64 {
 	return 5 * math.sin(x / 30) + 400
 }
 
-fn calc_surface_sin2(x f64) f64 {
-	return 10 * math.sin(x / 30) + 600
+fn calc_surface_two_sins(x f64) f64 {
+	return 10 * math.sin(x / 30) + 5 * math.sin(x / 20) + 600
 }
 
-fn line_render(ctx gg.Context) {
+fn line_render(ctx gg.Context, len int) {
 	c := gg.white
 	if c.a != 255 {
 		sgl.load_pipeline(ctx.pipeline.alpha)
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
-	len := 1000
 
 	sgl.begin_line_strip()
 	for x in 0 .. len {
@@ -302,7 +298,7 @@ fn line_render(ctx gg.Context) {
 
 	sgl.begin_line_strip()
 	for x in 0 .. len {
-		sgl.v2f(x, f32(calc_surface_sin2(x)))
+		sgl.v2f(x, f32(calc_surface_two_sins(x)))
 	}
 	sgl.end()
 }
