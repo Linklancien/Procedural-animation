@@ -135,20 +135,41 @@ fn (chain Chain) render(ctx gg.Context, pos vec.Vec2[f64]) {
 // Spider
 struct Spider {
 mut:
+  linked_legs [][]int
 	legs  []Leg
 	chain Chain
 }
 
 fn Spider.create() Spider {
-	len := 5
+	spider_len := 5
 	pos_constraint := 20.0
 	angle_constraint := math.pi * 2 / 6
-	ids := [1, 1, 4, 4]
 	colors := [gg.red, gg.blue, gg.green, gg.purple]
-	return Spider{
-		legs:  []Leg{len: 4, init: Leg.create(ids[index], colors[index])}
-		chain: Chain.create_fixed(gg.gray, len, pos_constraint, angle_constraint)
+	// legs
+	nb_leg := 4
+	mut linked_legs := [][]int{len: spider_len}
+	for i in 0..nb_leg{
+	  linked_legs[create_ids(i)] << i
 	}
+	return Spider{
+	  linked_legs: linked_legs
+		legs:  []Leg{len: nb_leg, init: Leg.create(create_ids(index), colors[index])}
+		chain: Chain.create_fixed(gg.gray, spider_len, pos_constraint, angle_constraint)
+	}
+}
+
+fn create_ids(index int) int{
+  match index{
+    0, 1{
+      return 1
+    }
+    2, 3{
+      return 4
+    }
+    else{
+      panic('case not handle')
+    }
+  }
 }
 
 fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
@@ -157,18 +178,17 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 
 	// the code inside the loop may be placed elsewhere
 	for mut leg in mut spider.legs {
-		mut current_target := leg.absolute_target - spider.chain.points[leg.id_body_part]
-		if current_target.magnitude() > leg.radius {
-			check_at := spider.chain.points[leg.id_body_part]
-			if target := get_target(check_at.x, check_at.y, leg.absolute_target.x, leg.absolute_target.y,
-				leg.radius, [calc_surface_line, calc_surface_sin, calc_surface_sin2])
-			{
-				leg.absolute_target = target
+		leg.new_target(spider.chain.points[leg.id_body_part], false)
+	}
+	
+	for leg_linked_to_bodypart in spider.linked_legs{
+	  if leg_linked_to_bodypart.len > 1{
+			id0 := leg_linked_to_bodypart[0]
+			id1 := leg_linked_to_bodypart[1]
+			if spider.legs[id0].chain.points[0].distance(spider.legs[id1].chain.points[0]) <= 20{
+			  spider.legs[id0].new_target(spider.chain.points[spider.legs[id0].id_body_part], true)
 			}
-			// get the new target relatively to the leg base
-			current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
 		}
-		leg.chain.update(current_target, .fabrik)
 	}
 }
 
@@ -200,13 +220,24 @@ fn Leg.create(id int, color gg.Color) Leg {
 	}
 }
 
+fn (mut leg Leg) new_target(abs_pos vec.Vec2[f64], forced bool){
+  mut current_target := leg.absolute_target - abs_pos
+	if current_target.magnitude() > leg.radius || forced{
+		leg.absolute_target = get_target(abs_pos.x, abs_pos.y, leg.absolute_target.x, leg.absolute_target.y,
+			leg.radius, [calc_surface_line, calc_surface_sin, calc_surface_sin2])
+		// get the new target relatively to the leg base
+		current_target = leg.absolute_target - abs_pos
+	}
+	leg.chain.update(current_target, .fabrik)
+}
+
 fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
 	leg.chain.render(ctx, pos)
 }
 
 // Surfaces
 
-fn get_target(x f64, y f64, target_x f64, target_y f64, radius f64, fs []fn (f64) f64) !vec.Vec2[f64] {
+fn get_target(x f64, y f64, target_x f64, target_y f64, radius f64, fs []fn (f64) f64) vec.Vec2[f64] {
 	rsquared := radius * radius
 	mut sav_x := target_x
 	mut sav_y := target_y
