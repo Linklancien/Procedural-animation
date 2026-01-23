@@ -135,41 +135,61 @@ fn (chain Chain) render(ctx gg.Context, pos vec.Vec2[f64]) {
 // Spider
 struct Spider {
 mut:
+  linked_legs [][]int
 	legs  []Leg
 	chain Chain
 }
 
 fn Spider.create() Spider {
-	len := 5
+	spider_len := 5
 	pos_constraint := 20.0
 	angle_constraint := math.pi * 2 / 6
-	ids := [1, 1, 4, 4]
 	colors := [gg.red, gg.blue, gg.green, gg.purple]
-	return Spider{
-		legs:  []Leg{len: 4, init: Leg.create(ids[index], colors[index])}
-		chain: Chain.create_fixed(gg.gray, len, pos_constraint, angle_constraint)
+	// legs
+	nb_leg := 4
+	mut linked_legs := [][]int{len: spider_len}
+	for i in 0..nb_leg{
+	  linked_legs[create_ids(i)] << i
 	}
+	return Spider{
+	  linked_legs: linked_legs
+		legs:  []Leg{len: nb_leg, init: Leg.create(create_ids(index), colors[index])}
+		chain: Chain.create_fixed(gg.gray, spider_len, pos_constraint, angle_constraint)
+	}
+}
+
+fn create_ids(index int) int{
+  match index{
+    0, 1{
+      return 1
+    }
+    2, 3{
+      return 4
+    }
+    else{
+      panic('case not handle')
+    }
+  }
 }
 
 fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 	// start moving things
 	spider.chain.update(head_target, .goto)
-	turn := [true, false, true, false]
-	
+
 	// the code inside the loop may be placed elsewhere
-	for i, mut leg in mut spider.legs {
-		mut current_target := leg.absolute_target - spider.chain.points[leg.id_body_part]
-		if current_target.magnitude() > leg.radius {
-			check_at := spider.chain.points[leg.id_body_part]
-			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], [calc_surface_line, calc_surface_sin, calc_surface_sin2]) {
-				leg.absolute_target = target
-			}
-			// get the new target relatively to the leg base
-			current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
-		}
-		leg.chain.update(current_target, .fabrik)
+	for mut leg in mut spider.legs {
+		leg.new_target(spider.chain.points[leg.id_body_part], false)
 	}
-	sgl.end()
+	
+	for leg_linked_to_bodypart in spider.linked_legs{
+	  if leg_linked_to_bodypart.len > 1{
+			id0 := leg_linked_to_bodypart[0]
+			id1 := leg_linked_to_bodypart[1]
+			if spider.legs[id0].chain.points[0].distance(spider.legs[id1].chain.points[0]) <= 20{
+			  spider.legs[id0].new_target(spider.chain.points[spider.legs[id0].id_body_part], true)
+			}
+		}
+	}
 }
 
 fn (spider Spider) render(ctx gg.Context) {
@@ -200,28 +220,52 @@ fn Leg.create(id int, color gg.Color) Leg {
 	}
 }
 
+fn (mut leg Leg) new_target(abs_pos vec.Vec2[f64], forced bool){
+  mut current_target := leg.absolute_target - abs_pos
+	if current_target.magnitude() > leg.radius || forced{
+		leg.absolute_target = get_target(abs_pos.x, abs_pos.y, leg.absolute_target.x, leg.absolute_target.y,
+			leg.radius, [calc_surface_line, calc_surface_sin, calc_surface_sin2])
+		// get the new target relatively to the leg base
+		current_target = leg.absolute_target - abs_pos
+	}
+	leg.chain.update(current_target, .fabrik)
+}
+
 fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
 	leg.chain.render(ctx, pos)
 }
 
 // Surfaces
 
-fn get_target(x f64, y f64, radius f64, reversed bool, fs []fn (f64) f64) !vec.Vec2[f64] {
+fn get_target(x f64, y f64, target_x f64, target_y f64, radius f64, fs []fn (f64) f64) vec.Vec2[f64] {
 	rsquared := radius * radius
-	for r_f in -int(radius) .. int(radius) + 1 {
-		r := if reversed { -r_f } else { r_f }
-		for f in fs{
-  		value := f(x + r) - y
-  		// need to be cautious of which base it is
-  		if value * value + r * r <= rsquared {
-  			return vec.Vec2[f64]{
-  				x: x + r
-  				y: f(x + r)
-  			}
-  		}
+	mut sav_x := target_x
+	mut sav_y := target_y
+	mut dist_square := 0.0
+
+	for r in -int(radius) .. int(radius) + 1 {
+		for f in fs {
+			value := f(x + r) - y
+			// need to be cautious of which base it is
+			if value * value + r * r <= rsquared {
+				new_dist := calc_dist_square(target_x, target_y, x + r, f(x + r))
+				
+				if dist_square < new_dist {
+					dist_square = new_dist
+					sav_x = x + r
+					sav_y = f(x + r)
+				}
+			}
 		}
 	}
-	return error('No y find')
+	return vec.Vec2[f64]{
+		x: sav_x // x + r
+		y: sav_y // f(x + r)
+	}
+}
+
+fn calc_dist_square(x1 f64, y1 f64, x2 f64, y2 f64) f64 {
+  return (x1 - x2 )*(x1 - x2 ) + (y1 - y2)*(y1 - y2)
 }
 
 fn calc_surface_line(x f64) f64 {
@@ -243,18 +287,19 @@ fn line_render(ctx gg.Context) {
 	}
 	sgl.c4b(c.r, c.g, c.b, c.a)
 	len := 1000
+
 	sgl.begin_line_strip()
 	for x in 0 .. len {
 		sgl.v2f(x, f32(calc_surface_line(x)))
 	}
 	sgl.end()
-	
+
 	sgl.begin_line_strip()
 	for x in 0 .. len {
 		sgl.v2f(x, f32(calc_surface_sin(x)))
 	}
 	sgl.end()
-	
+
 	sgl.begin_line_strip()
 	for x in 0 .. len {
 		sgl.v2f(x, f32(calc_surface_sin2(x)))
