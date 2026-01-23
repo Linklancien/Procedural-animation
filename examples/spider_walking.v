@@ -169,6 +169,7 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 		}
 		leg.chain.update(current_target, .fabrik)
 	}
+	sgl.end()
 }
 
 fn (spider Spider) render(ctx gg.Context) {
