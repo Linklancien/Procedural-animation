@@ -15,8 +15,8 @@ mut:
 
 	x_mouse    int
 	y_mouse    int
-	win_width  int
-	win_height int
+	win_width  int = 1000
+	win_height int = 700
 
 	target vec.Vec2[f64]
 
@@ -152,59 +152,22 @@ fn Spider.create() Spider {
 }
 
 fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
-	// // iniitialise the update:
-	// for mut leg in mut spider.legs {
-	//   // get the new target relatively to the leg base
-	// 	leg.current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
-	// }
 	// start moving things
 	spider.chain.update(head_target, .goto)
-	// ofset := [10, -10, 0, 0]
 	turn := [true, false, true, false]
+	
+	// the code inside the loop may be placed elsewhere
 	for i, mut leg in mut spider.legs {
 		mut current_target := leg.absolute_target - spider.chain.points[leg.id_body_part]
 		if current_target.magnitude() > leg.radius {
 			check_at := spider.chain.points[leg.id_body_part]
-			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], calc_surface) {
+			if target := get_target(check_at.x, check_at.y, leg.radius, turn[i], [calc_surface_line, calc_surface_sin, calc_surface_sin2]) {
 				leg.absolute_target = target
 			}
 			// get the new target relatively to the leg base
 			current_target = leg.absolute_target - spider.chain.points[leg.id_body_part]
 		}
 		leg.chain.update(current_target, .fabrik)
-	}
-}
-
-fn get_target(x f64, y f64, radius f64, reversed bool, f fn (f64) f64) !vec.Vec2[f64] {
-	rsquared := radius * radius
-	for r_f in -int(radius) .. int(radius) + 1 {
-		r := if reversed { -r_f } else { r_f }
-		value := f(x + r) - y
-		// need to be cautious of which base it is
-		if value * value + r * r <= rsquared {
-			return vec.Vec2[f64]{
-				x: x + r
-				y: f(x + r)
-			}
-		}
-	}
-	return error('No y find')
-}
-
-fn calc_surface(x f64) f64 {
-	return 15 * math.sin(x / 30) + 200
-}
-
-fn line_render(ctx gg.Context) {
-	c := gg.white
-	if c.a != 255 {
-		sgl.load_pipeline(ctx.pipeline.alpha)
-	}
-	sgl.c4b(c.r, c.g, c.b, c.a)
-	sgl.begin_line_strip()
-
-	for x in 0 .. 1092 {
-		sgl.v2f(x, f32(calc_surface(x)))
 	}
 	sgl.end()
 }
@@ -239,4 +202,62 @@ fn Leg.create(id int, color gg.Color) Leg {
 
 fn (leg Leg) render(ctx gg.Context, pos vec.Vec2[f64]) {
 	leg.chain.render(ctx, pos)
+}
+
+// Surfaces
+
+fn get_target(x f64, y f64, radius f64, reversed bool, fs []fn (f64) f64) !vec.Vec2[f64] {
+	rsquared := radius * radius
+	for r_f in -int(radius) .. int(radius) + 1 {
+		r := if reversed { -r_f } else { r_f }
+		for f in fs{
+  		value := f(x + r) - y
+  		// need to be cautious of which base it is
+  		if value * value + r * r <= rsquared {
+  			return vec.Vec2[f64]{
+  				x: x + r
+  				y: f(x + r)
+  			}
+  		}
+		}
+	}
+	return error('No y find')
+}
+
+fn calc_surface_line(x f64) f64 {
+	return 200
+}
+
+fn calc_surface_sin(x f64) f64 {
+	return 5 * math.sin(x / 30) + 400
+}
+
+fn calc_surface_sin2(x f64) f64 {
+	return 10 * math.sin(x / 30) + 600
+}
+
+fn line_render(ctx gg.Context) {
+	c := gg.white
+	if c.a != 255 {
+		sgl.load_pipeline(ctx.pipeline.alpha)
+	}
+	sgl.c4b(c.r, c.g, c.b, c.a)
+	len := 1000
+	sgl.begin_line_strip()
+	for x in 0 .. len {
+		sgl.v2f(x, f32(calc_surface_line(x)))
+	}
+	sgl.end()
+	
+	sgl.begin_line_strip()
+	for x in 0 .. len {
+		sgl.v2f(x, f32(calc_surface_sin(x)))
+	}
+	sgl.end()
+	
+	sgl.begin_line_strip()
+	for x in 0 .. len {
+		sgl.v2f(x, f32(calc_surface_sin2(x)))
+	}
+	sgl.end()
 }
