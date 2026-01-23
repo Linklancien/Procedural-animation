@@ -170,7 +170,6 @@ fn (mut spider Spider) update(head_target vec.Vec2[f64]) {
 		}
 		leg.chain.update(current_target, .fabrik)
 	}
-	sgl.end()
 }
 
 fn (spider Spider) render(ctx gg.Context) {
@@ -219,6 +218,7 @@ fn get_target(x f64, y f64, target_x f64, target_y f64, radius f64, fs []fn (f64
 			// need to be cautious of which base it is
 			if value * value + r * r <= rsquared {
 				new_dist := calc_dist_square(target_x, target_y, x + r, f(x + r))
+				
 				if dist_square < new_dist {
 					dist_square = new_dist
 					sav_x = x + r
@@ -234,7 +234,7 @@ fn get_target(x f64, y f64, target_x f64, target_y f64, radius f64, fs []fn (f64
 }
 
 fn calc_dist_square(x1 f64, y1 f64, x2 f64, y2 f64) f64 {
-	return x1 * x2 + y1 * y2
+  return (x1 - x2 )*(x1 - x2 ) + (y1 - y2)*(y1 - y2)
 }
 
 fn calc_surface_line(x f64) f64 {
